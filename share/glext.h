@@ -18,6 +18,13 @@
 /*---------------------------------------------------------------------------*/
 /* Include the system OpenGL headers.                                        */
 
+//senquack
+#ifdef GCWZERO
+// For GL type defines:
+#include "GLES/gl.h"
+#include "GLES/egl.h"
+#else
+
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -32,6 +39,8 @@
 #ifdef _WIN32
 #include <GL/glext.h>
 #endif
+
+#endif //GCWZERO
 
 /* Windows calling convention cruft. */
 
@@ -155,9 +164,14 @@ int glext_init(void);
 /* of the extensions we use. Otherwise, GetProc them regardless of whether   */
 /* they need it or not.                                                      */
 
-#if defined(GL_VERSION_ES_CM_1_0) || \
-    defined(GL_VERSION_ES_CM_1_1) || \
-    defined(GL_OES_VERSION_1_0)
+//senquack
+//#if defined(GL_VERSION_ES_CM_1_0) || \
+//    defined(GL_VERSION_ES_CM_1_1) || \
+//    defined(GL_OES_VERSION_1_0)
+#if defined(GCWZERO) || \
+   defined(GL_VERSION_ES_CM_1_0) || \
+   defined(GL_VERSION_ES_CM_1_1) || \
+   defined(GL_OES_VERSION_1_0)
 
 #define ENABLE_OPENGLES 1
 
@@ -170,6 +184,8 @@ int glext_init(void);
 #define glDeleteBuffers_       glDeleteBuffers
 #define glIsBuffer_            glIsBuffer
 #define glPointParameterfv_    glPointParameterfv
+//senquack - had to add this:
+#define glPointParameterf_    glPointParameterf
 
 #define glOrtho_               glOrthof
 

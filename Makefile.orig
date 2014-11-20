@@ -1,6 +1,3 @@
-#senquack
-CC = /opt/gcw0-toolchain/usr/bin/mipsel-gcw0-linux-uclibc-gcc
-CXX = /opt/gcw0-toolchain/usr/bin/mipsel-gcw0-linux-uclibc-g++
 
 #------------------------------------------------------------------------------
 
@@ -65,17 +62,10 @@ endif
 
 ALL_CXXFLAGS := -fno-rtti -fno-exceptions $(CXXFLAGS)
 
-#senquack
-ALL_CFLAGS += -DGCWZERO -DENABLE_OPENGLES -I/opt/gcw0-toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/include
-ALL_CXXFLAGS += -DGCWZERO -DENABLE_OPENGLES -I/opt/gcw0-toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/include
-
 # Preprocessor...
 
-#senquack
-#SDL_CPPFLAGS := $(shell sdl2-config --cflags)
-#PNG_CPPFLAGS := $(shell libpng-config --cflags)
-SDL_CPPFLAGS := $(shell /opt/gcw0-toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/bin/sdl2-config --cflags)
-PNG_CPPFLAGS := $(shell /opt/gcw0-toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/bin/libpng-config --cflags)
+SDL_CPPFLAGS := $(shell sdl2-config --cflags)
+PNG_CPPFLAGS := $(shell libpng-config --cflags)
 
 ALL_CPPFLAGS := $(SDL_CPPFLAGS) $(PNG_CPPFLAGS) -Ishare
 
@@ -84,11 +74,11 @@ ALL_CPPFLAGS += \
 	-DCONFIG_DATA=\"$(DATADIR)\" \
 	-DCONFIG_LOCALE=\"$(LOCALEDIR)\"
 
-#ifeq ($(ENABLE_NLS),0)
+ifeq ($(ENABLE_NLS),0)
 	ALL_CPPFLAGS += -DENABLE_NLS=0
-#else
-#	ALL_CPPFLAGS += -DENABLE_NLS=1
-#endif
+else
+	ALL_CPPFLAGS += -DENABLE_NLS=1
+endif
 
 ifeq ($(ENABLE_HMD),openhmd)
 	ALL_CPPFLAGS += -DENABLE_HMD=1
@@ -134,11 +124,8 @@ ALL_CPPFLAGS += $(HMD_CPPFLAGS)
 #------------------------------------------------------------------------------
 # Libraries
 
-#senquack
-#SDL_LIBS := $(shell sdl2-config --libs)
-#PNG_LIBS := $(shell libpng-config --libs)
-SDL_LIBS := $(shell /opt/gcw0-toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/bin/sdl2-config --libs)
-PNG_LIBS := $(shell /opt/gcw0-toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/bin/libpng-config --libs)
+SDL_LIBS := $(shell sdl2-config --libs)
+PNG_LIBS := $(shell libpng-config --libs)
 
 ifeq ($(ENABLE_FS),stdio)
 FS_LIBS :=
@@ -165,9 +152,7 @@ endif
 endif
 endif
 
-#senquack
-#OGL_LIBS := -lGL
-OGL_LIBS := -lGLESv1_CM -lEGL
+OGL_LIBS := -lGL
 
 ifeq ($(PLATFORM),mingw)
 	ifneq ($(ENABLE_NLS),0)
