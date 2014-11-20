@@ -26,7 +26,10 @@
 #include "hmd.h"
 #include "video.h"
 
-//senquack TODO: investigate whether I should leave this commented-out:
+//senquack - NOTE: all of this code is no longer used on GCW Zero:
+//          I couldn't get sprite particles to work on Etnaviv.
+//          Besides, performance already suffers enough without them.
+
 /*---------------------------------------------------------------------------*/
 /*
 #define PARTICLEVBO 1
