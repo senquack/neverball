@@ -341,7 +341,7 @@ static void game_draw_fore(struct s_rend *rend,
                 sol_bill(draw, rend, M, t);
 
                 game_draw_beams(rend, gd);
-                part_draw_coin(rend);
+//                part_draw_coin(rend);
             }
             glEnable(GL_LIGHTING);
 
@@ -564,7 +564,8 @@ void game_lerp_apply(struct game_lerp *gl, struct game_draw *gd)
 
     /* Particles. */
 
-    part_lerp_apply(a);
+    //senquack - particles don't work on GCW Zero's GLES
+//    part_lerp_apply(a);
 
     /* Tilt. */
 

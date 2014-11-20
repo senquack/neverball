@@ -990,10 +990,13 @@ void r_apply_mtrl(struct s_rend *rend, int mi)
     {
         if (mp_flags & M_PARTICLE)
         {
-            const int s = video.device_h / 4;
+//            const int s = video.device_h / 4;
+            const int s = 64;
             const GLfloat c[3] = { 0.0f, 0.0f, 1.0f };
 
-            glEnable (GL_POINT_SPRITE);
+            //senquack
+//            glEnable (GL_POINT_SPRITE);
+            glEnable(GL_POINT_SPRITE_OES);
             glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
             glPointParameterfv_(GL_POINT_DISTANCE_ATTENUATION, c);
             glPointParameterf_ (GL_POINT_SIZE_MIN, 1);
@@ -1001,7 +1004,9 @@ void r_apply_mtrl(struct s_rend *rend, int mi)
         }
         else
         {
-            glDisable(GL_POINT_SPRITE);
+            //senquack
+//            glDisable(GL_POINT_SPRITE);
+            glDisable(GL_POINT_SPRITE_OES);
         }
     }
 

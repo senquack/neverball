@@ -213,7 +213,8 @@ static int null_enter(struct state *st, struct state *prev)
     geom_free();
     ball_free();
     shad_free();
-    part_free();
+    //senquack - particles don't work on GCW Zero's GLES
+//    part_free();
     mtrl_free_objects();
 
     return 0;
@@ -222,7 +223,8 @@ static int null_enter(struct state *st, struct state *prev)
 static void null_leave(struct state *st, struct state *next, int id)
 {
     mtrl_load_objects();
-    part_init();
+    //senquack - particles don't work on GCW Zero's GLES
+//    part_init();
     shad_init();
     ball_init();
     geom_init();

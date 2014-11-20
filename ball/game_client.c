@@ -120,7 +120,8 @@ static void game_run_cmd(const union cmd *cmd)
                         gd.jump_b = 0;
                 }
 
-                part_step(v, dt);
+                //senquack - particles don't work on GCW Zero's GLES
+//                part_step(v, dt);
             }
 
             break;
@@ -156,7 +157,8 @@ static void game_run_cmd(const union cmd *cmd)
                 hp = &vary->hv[idx];
 
                 item_color(hp, v);
-                part_burst(hp->p, v);
+                //senquack - particles don't work on GCW Zero's GLES
+//                part_burst(hp->p, v);
 
                 hp->t = ITEM_NONE;
             }
@@ -421,7 +423,8 @@ int  game_client_init(const char *file_name)
 
     /* Initialize particles. */
 
-    part_reset();
+    //senquack - particles don't work on GCW Zero's GLES
+//    part_reset();
 
     /* Initialize command state. */
 

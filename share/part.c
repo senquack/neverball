@@ -26,6 +26,7 @@
 #include "hmd.h"
 #include "video.h"
 
+//senquack TODO: investigate whether I should leave this commented-out:
 /*---------------------------------------------------------------------------*/
 /*
 #define PARTICLEVBO 1
