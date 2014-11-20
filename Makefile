@@ -226,6 +226,8 @@ else
 endif
 
 #------------------------------------------------------------------------------
+# senquack - NOTE I removed share/part.o from BALL_OBJS and PUTT_OBJS, as particles are no longer
+#     a part of GCW Zero GLES port (they do not work no matter how I tried)
 
 MAPC_OBJS := \
 	share/vec3.o        \
@@ -252,7 +254,6 @@ BALL_OBJS := \
 	share/solid_draw.o  \
 	share/solid_all.o   \
 	share/mtrl.o        \
-	share/part.o        \
 	share/geom.o        \
 	share/ball.o        \
 	share/gui.o         \
@@ -322,7 +323,6 @@ PUTT_OBJS := \
 	share/solid_draw.o  \
 	share/solid_all.o   \
 	share/mtrl.o        \
-	share/part.o        \
 	share/geom.o        \
 	share/ball.o        \
 	share/base_config.o \
