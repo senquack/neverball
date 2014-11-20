@@ -43,8 +43,11 @@ ifeq ($(DEBUG),1)
 	CXXFLAGS := -g
 	CPPFLAGS :=
 else
+#senquack
 	CFLAGS   := -O2
 	CXXFLAGS := -O2
+#	CFLAGS   := -O2 -mno-shared -flto 
+#	CXXFLAGS := -O2 -mno-shared -flto 
 	CPPFLAGS := -DNDEBUG
 endif
 
@@ -167,7 +170,7 @@ endif
 
 #senquack
 #OGL_LIBS := -lGL
-OGL_LIBS := -lGLESv1_CM -lEGL
+OGL_LIBS := -lGLESv1_CM  -lEGL
 
 ifeq ($(PLATFORM),mingw)
 	ifneq ($(ENABLE_NLS),0)

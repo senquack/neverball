@@ -133,6 +133,12 @@ int video_init(void)
 
 int video_mode(int f, int w, int h)
 {
+    //senquack
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+
+
     int stereo  = config_get_d(CONFIG_STEREO)      ? 1 : 0;
     int stencil = config_get_d(CONFIG_REFLECTION)  ? 1 : 0;
     int buffers = config_get_d(CONFIG_MULTISAMPLE) ? 1 : 0;
@@ -154,23 +160,45 @@ int video_mode(int f, int w, int h)
         SDL_DestroyWindow(window);
     }
 
-    SDL_GL_SetAttribute(SDL_GL_STEREO,             stereo);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE,       stencil);
+    //senquack
+//    SDL_GL_SetAttribute(SDL_GL_STEREO,             stereo);
+
+    //senquack DEBUG
+//    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE,       1);
+
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, buffers);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, samples);
 
     /* Require 16-bit double buffer with 16-bit depth buffer. */
 
-    SDL_GL_SetAttribute(SDL_GL_RED_SIZE,     5);
-    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,   5);
-    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,    5);
+   //senquack - GCW Zero port change
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE,     8);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,   8);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,    8);
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE,    8);
+    SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE,    32);
+//    SDL_GL_SetAttribute(SDL_GL_RED_SIZE,     5);
+//    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,   6);
+//    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,    5);
+//    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE,    0);
+//    SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE,    16);
+
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,  16);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+    //senquack
+    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 
     /* Try to set the currently specified mode. */
 
     log_printf("Creating a window (%dx%d, %s)\n",
                w, h, (f ? "fullscreen" : "windowed"));
+
+    //senquack DEBUG -  DO NOT RUN - loads GLES2.0 for some reason
+//    SDL_VideoInit(NULL);
 
     window = SDL_CreateWindow("", X, Y, w, h,
                               SDL_WINDOW_OPENGL |
@@ -224,6 +252,27 @@ int video_mode(int f, int w, int h)
             {
                 video.window_w = dm.w;
                 video.window_h = dm.h;
+
+//                //senquack
+                dm.format = SDL_PIXELFORMAT_RGBA8888;
+//    dm.format = SDL_PIXELFORMAT_RGB565;
+                dm.w = 320;
+                dm.h = 240;
+                dm.refresh_rate = 60;
+                dm.driverdata = 0;
+                SDL_SetWindowDisplayMode(window, &dm);
+                printf("setting new video dm..\n");
+                SDL_GetCurrentDisplayMode(0, &dm);
+                SDL_Log("Screen w: %d h: %d\n", dm.w, dm.h);
+                SDL_Log("Screen bpp: %d\n", SDL_BITSPERPIXEL(dm.format));
+                SDL_Log("Screen dm: ");
+                SDL_Log("\n\n");
+                SDL_Log("Vendor     : %s\n", glGetString(GL_VENDOR));
+                SDL_Log("Renderer   : %s\n", glGetString(GL_RENDERER));
+                SDL_Log("Version    : %s\n", glGetString(GL_VERSION));
+                SDL_Log("Extensions : %s\n", glGetString(GL_EXTENSIONS));
+                SDL_Log("\n");
+                fflush(NULL);
             }
         }
         else
