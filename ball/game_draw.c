@@ -245,7 +245,9 @@ static void game_clip_ball(const struct game_draw *gd, int d, const float *p)
     pz[1] = gd->view.p[1] - c[1];
     pz[2] = gd->view.p[2] - c[2];
 
-    r = sqrt(pz[0] * pz[0] + pz[1] * pz[1] + pz[2] * pz[2]);
+    //senquack - no need to use double version of sqrt():
+//    r = sqrt(pz[0] * pz[0] + pz[1] * pz[1] + pz[2] * pz[2]);
+    r = sqrtf(pz[0] * pz[0] + pz[1] * pz[1] + pz[2] * pz[2]);
 
     pz[0] /= r;
     pz[1] /= r;
@@ -345,18 +347,19 @@ static void game_draw_fore(struct s_rend *rend,
             }
             glEnable(GL_LIGHTING);
 
-            /* Draw the entity particles using only the sparkle light. */
-
-            glDisable(GL_LIGHT0);
-            glDisable(GL_LIGHT1);
-            glEnable (GL_LIGHT2);
-            {
-                game_draw_goals(rend, gd, t);
-                game_draw_jumps(rend, gd, t);
-            }
-            glDisable(GL_LIGHT2);
-            glEnable (GL_LIGHT1);
-            glEnable (GL_LIGHT0);
+            //senquack
+//            /* Draw the entity particles using only the sparkle light. */
+//
+//            glDisable(GL_LIGHT0);
+//            glDisable(GL_LIGHT1);
+//            glEnable (GL_LIGHT2);
+//            {
+//                game_draw_goals(rend, gd, t);
+//                game_draw_jumps(rend, gd, t);
+//            }
+//            glDisable(GL_LIGHT2);
+//            glEnable (GL_LIGHT1);
+//            glEnable (GL_LIGHT0);
         }
         glDepthMask(GL_TRUE);
 
@@ -414,7 +417,8 @@ void game_draw(struct game_draw *gd, int pose, float t)
 
         gd->draw.shadow_ui = 0;
 
-        game_shadow_conf(pose, 1);
+        //senquack
+//        game_shadow_conf(pose, 1);
         r_draw_enable(&rend);
 
         video_push_persp(fov, 0.1f, FAR_DIST);
@@ -446,44 +450,45 @@ void game_draw(struct game_draw *gd, int pose, float t)
             game_draw_back(&rend, gd, pose, +1, t);
 
             /* Draw the reflection. */
-
-            if (gd->draw.reflective && config_get_d(CONFIG_REFLECTION))
-            {
-                glEnable(GL_STENCIL_TEST);
-                {
-                    /* Draw the mirrors only into the stencil buffer. */
-
-                    glStencilFunc(GL_ALWAYS, 1, 0xFFFFFFFF);
-                    glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
-                    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-                    glDepthMask(GL_FALSE);
-
-                    game_refl_all(&rend, gd);
-
-                    glDepthMask(GL_TRUE);
-                    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-                    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-                    glStencilFunc(GL_EQUAL, 1, 0xFFFFFFFF);
-
-                    /* Draw the scene reflected into color and depth buffers. */
-
-                    glFrontFace(GL_CW);
-                    glPushMatrix();
-                    {
-                        glScalef(+1.0f, -1.0f, +1.0f);
-
-                        game_draw_light(gd, -1, t);
-
-                        game_draw_back(&rend, gd, pose,    -1, t);
-                        game_draw_fore(&rend, gd, pose, U, -1, t);
-                    }
-                    glPopMatrix();
-                    glFrontFace(GL_CCW);
-
-                    glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFF);
-                }
-                glDisable(GL_STENCIL_TEST);
-            }
+            //senquack
+//
+//            if (gd->draw.reflective && config_get_d(CONFIG_REFLECTION))
+//            {
+//                glEnable(GL_STENCIL_TEST);
+//                {
+//                    /* Draw the mirrors only into the stencil buffer. */
+//
+//                    glStencilFunc(GL_ALWAYS, 1, 0xFFFFFFFF);
+//                    glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+//                    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+//                    glDepthMask(GL_FALSE);
+//
+//                    game_refl_all(&rend, gd);
+//
+//                    glDepthMask(GL_TRUE);
+//                    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+//                    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+//                    glStencilFunc(GL_EQUAL, 1, 0xFFFFFFFF);
+//
+//                    /* Draw the scene reflected into color and depth buffers. */
+//
+//                    glFrontFace(GL_CW);
+//                    glPushMatrix();
+//                    {
+//                        glScalef(+1.0f, -1.0f, +1.0f);
+//
+//                        game_draw_light(gd, -1, t);
+//
+//                        game_draw_back(&rend, gd, pose,    -1, t);
+//                        game_draw_fore(&rend, gd, pose, U, -1, t);
+//                    }
+//                    glPopMatrix();
+//                    glFrontFace(GL_CCW);
+//
+//                    glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFF);
+//                }
+//                glDisable(GL_STENCIL_TEST);
+//            }
 
             /* Ready the lights for foreground rendering. */
 
