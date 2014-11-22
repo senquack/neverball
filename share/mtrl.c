@@ -84,13 +84,16 @@ static int find_mtrl(const char *name)
 static GLuint find_texture(const char *name)
 {
     char path[MAXSTR];
+
+    //senquack - to fix 'cppcheck' warning strncpy not null-terminating:
+    path[MAXSTR-1] = '\0';
+
     GLuint o;
     int i;
 
     for (i = 0; i < ARRAYSIZE(tex_paths); i++)
     {
         CONCAT_PATH(path, &tex_paths[i], name);
-
         if ((o = make_image_from_file(path, IF_MIPMAP)))
             return o;
     }
