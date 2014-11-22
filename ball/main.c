@@ -46,9 +46,13 @@
 #ifdef GCWZERO
 #include <sys/stat.h>
 #include <sys/types.h>
+
+// This is also defined within the Makefile, but placed here to doubly-ensure symlink() is correctly declared:
+#define POSIX_C_SOURCE 200112L
 #include <unistd.h>
+
 #include <errno.h>
-#endif
+#endif //GCWZERO
 
 const char TITLE[] = "Neverball " VERSION;
 const char ICON[] = "icon/neverball.png";
@@ -458,8 +462,8 @@ static void make_dirs_and_migrate(void)
         }
     }
 
-/* senquack - the working-replay file (Last.nbr) is now written to Replays/tmp/ which is a symlink to /tmp
-                and this should fix the random stutters coming from constantly writing to a file while playing. */
+/* senquack - the working-replay file (Last.nbr) is now written to Replays/tmp/ which is a symlink to /tmp and this 
+    should fix the random stutters and increased SD/SSD-wear coming from constantly writing to a file while playing. */
 #ifdef GCWZERO
     int retval;
     retval = mkdir("/tmp/neverball", 0755);
