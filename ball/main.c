@@ -44,6 +44,8 @@
 
 //senquack - for new code in make_dirs_and_migrate():
 #ifdef GCWZERO
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
 #endif
@@ -460,10 +462,16 @@ static void make_dirs_and_migrate(void)
                 and this should fix the random stutters coming from constantly writing to a file while playing. */
 #ifdef GCWZERO
     int retval;
-    retval = symlink("/var/tmp", "/media/data/local/home/.neverball/Replays/tmp");
+    retval = mkdir("/tmp/neverball", 0755);
     if (retval) {
-        printf("Error in make_dirs_and_migrate() creating symlink Replays/tmp to /tmp\n");
+        printf("Error in make_dirs_and_migrate() creating folder /tmp/neverball\n");
         printf("%s\n", strerror(errno));
+    } else {
+        retval = symlink("/tmp/neverball", "/media/data/local/home/.neverball/Replays/tmp");
+        if (retval) {
+            printf("Error in make_dirs_and_migrate() creating symlink Replays/tmp to /tmp/neverball\n");
+            printf("%s\n", strerror(errno));
+        }
     }
 #endif
 

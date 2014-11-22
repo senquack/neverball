@@ -31,9 +31,10 @@ ifeq ($(PLATFORM),mingw)
 	USERDIR := Neverball
 endif
 
-ifneq ($(BUILD),release)
-	USERDIR := $(USERDIR)-dev
-endif
+#senquack - don't need this increasing chances of getting the port wrong:
+#ifneq ($(BUILD),release)
+#	USERDIR := $(USERDIR)-dev
+#endif
 
 #------------------------------------------------------------------------------
 # Optional flags (CFLAGS, CPPFLAGS, ...)
@@ -43,9 +44,9 @@ ifeq ($(DEBUG),1)
 	CXXFLAGS := -g
 	CPPFLAGS :=
 else
-#senquack
-	CFLAGS   := -O2
-	CXXFLAGS := -O2
+#senquack - added the posix define to fix implicit declaration of symlink() errors:
+	CFLAGS      := -O2 -D_POSIX_C_SOURCE=200112L
+	CXXFLAGS    := -O2 -D_POSIX_C_SOURCE=200112L
 #	CFLAGS   := -O2 -mno-shared -flto 
 #	CXXFLAGS := -O2 -mno-shared -flto 
 	CPPFLAGS := -DNDEBUG
