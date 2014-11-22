@@ -25,6 +25,12 @@
 #include <stdarg.h>
 #include <assert.h>
 
+//senquack - for new code in file_rename():
+#ifdef GCWZERO
+#include <errno.h>
+#include <unistd.h>
+#endif
+
 #include "common.h"
 #include "fs.h"
 
@@ -166,13 +172,57 @@ int file_exists(const char *name)
     return 0;
 }
 
+//senquack - modifying this to allow renaming a file that exists on another filesystem (after
+//    modifying Replays/Last.nbr current-demo-file to reside in Replays/tmp/Last.nbr where tmp/ is symlink to /tmp/)
+//int file_rename(const char *src, const char *dst)
+//{
+//#ifdef _WIN32
+//    if (file_exists(dst))
+//        remove(dst);
+//#endif
+//    
+//    return rename(src, dst);
+//}
 int file_rename(const char *src, const char *dst)
 {
 #ifdef _WIN32
     if (file_exists(dst))
         remove(dst);
 #endif
+    
+#ifdef GCWZERO
+    printf("Moving %s to %s\n", src, dst);
+    FILE *fp_src, *fp_dst;
+    int retval = 0;
+    char data = 0;
+    fp_src = fopen(src, "r");
+    if (fp_src) {
+       fp_dst = fopen(dst, "w");
+       if (fp_dst) {
+          while (fread(&data, 1, 1, fp_src)) {
+             fwrite(&data, 1, 1, fp_dst);
+          }
+          fclose(fp_dst);
+       } else {
+          printf("Error in file_rename(): cannot open %s for writing.\n", dst);
+          printf("%s\n", strerror(errno));
+          retval = -1;
+       }
+       fclose(fp_src);
+       if (unlink(src)) {
+          printf("Error in file_rename(): cannot remove old file %s.\n", src);
+          printf("%s\n", strerror(errno));
+       }
+    } else {
+       printf("Error in file_rename(): cannot open %s for reading.\n", src);
+       printf("%s\n", strerror(errno));
+       retval = -1;
+    }
+
+    return(retval);
+#else
     return rename(src, dst);
+#endif
 }
 
 void file_copy(FILE *fin, FILE *fout)

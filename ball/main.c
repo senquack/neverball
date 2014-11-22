@@ -42,6 +42,12 @@
 #include "st_level.h"
 #include "st_pause.h"
 
+//senquack - for new code in make_dirs_and_migrate():
+#ifdef GCWZERO
+#include <unistd.h>
+#include <errno.h>
+#endif
+
 const char TITLE[] = "Neverball " VERSION;
 const char ICON[] = "icon/neverball.png";
 
@@ -449,6 +455,17 @@ static void make_dirs_and_migrate(void)
             fs_dir_free(items);
         }
     }
+
+/* senquack - the working-replay file (Last.nbr) is now written to Replays/tmp/ which is a symlink to /tmp
+                and this should fix the random stutters coming from constantly writing to a file while playing. */
+#ifdef GCWZERO
+    int retval;
+    retval = symlink("/var/tmp", "/media/data/local/home/.neverball/Replays/tmp");
+    if (retval) {
+        printf("Error in make_dirs_and_migrate() creating symlink Replays/tmp to /tmp\n");
+        printf("%s\n", strerror(errno));
+    }
+#endif
 
     if (fs_mkdir("Scores"))
     {

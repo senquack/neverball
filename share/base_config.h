@@ -55,7 +55,14 @@
  */
 
 #define USER_CONFIG_FILE    "neverballrc"
+
+//senquack - New demo recording (Last.nbr) is written into Replays/tmp/ folder now,
+//    which is a symlink to /tmp/ to prevent in-game slowdowns and premature SD-card wear.
+#ifdef GCWZERO
+#define USER_REPLAY_FILE    "tmp/Last"
+#else
 #define USER_REPLAY_FILE    "Last"
+#endif
 
 /*---------------------------------------------------------------------------*/
 
