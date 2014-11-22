@@ -424,9 +424,13 @@ void video_swap(void)
     {
         /* Round the frames-per-second value to the nearest integer. */
 
-        double k = 1000.0 * frames / ticks;
-        double f = floor(k);
-        double c = ceil (k);
+        //senquack - converting to 100% floats where I can
+//        double k = 1000.0 * frames / ticks;
+//        double f = floor(k);
+//        double c = ceil (k);
+        float k = 1000.0 * frames / ticks;
+        float f = floor(k);
+        float c = ceil (k);
 
         /* Compute frame time and frames-per-second stats. */
 

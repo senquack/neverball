@@ -457,6 +457,7 @@ static float sol_test_lump(float dt,
     return t;
 }
 
+//senquack - this seems to be where we spend a lot of time:
 static float sol_test_node(float dt,
                            float T[3],
                            const struct v_ball *up,

@@ -196,15 +196,26 @@ static struct
     { &CONFIG_JOYSTICK_AXIS_X1_INVERT, "joystick_axis_x1_invert", 0 },
     { &CONFIG_JOYSTICK_AXIS_Y1_INVERT, "joystick_axis_y1_invert", 0 },
 
+#ifdef GCWZERO
+    { &CONFIG_JOYSTICK_BUTTON_A,      "joystick_button_a",      1 },
+    { &CONFIG_JOYSTICK_BUTTON_B,      "joystick_button_b",      0 },
+    { &CONFIG_JOYSTICK_BUTTON_X,      "joystick_button_x",      3 },
+    { &CONFIG_JOYSTICK_BUTTON_Y,      "joystick_button_y",      2 },
+    { &CONFIG_JOYSTICK_BUTTON_L1,     "joystick_button_l1",     7 },
+    { &CONFIG_JOYSTICK_BUTTON_R1,     "joystick_button_r1",     6 },
+    { &CONFIG_JOYSTICK_BUTTON_START,  "joystick_button_start",  5 },
+#else
     { &CONFIG_JOYSTICK_BUTTON_A,      "joystick_button_a",      0 },
     { &CONFIG_JOYSTICK_BUTTON_B,      "joystick_button_b",      1 },
     { &CONFIG_JOYSTICK_BUTTON_X,      "joystick_button_x",      2 },
     { &CONFIG_JOYSTICK_BUTTON_Y,      "joystick_button_y",      3 },
     { &CONFIG_JOYSTICK_BUTTON_L1,     "joystick_button_l1",     4 },
     { &CONFIG_JOYSTICK_BUTTON_R1,     "joystick_button_r1",     5 },
+    { &CONFIG_JOYSTICK_BUTTON_START,  "joystick_button_start",  8 },
+#endif //GCWZERO
+
     { &CONFIG_JOYSTICK_BUTTON_L2,     "joystick_button_l2",     6 },
     { &CONFIG_JOYSTICK_BUTTON_R2,     "joystick_button_r2",     7 },
-    { &CONFIG_JOYSTICK_BUTTON_START,  "joystick_button_start",  8 },
     { &CONFIG_JOYSTICK_DPAD_L,        "joystick_dpad_l",       -1 },
     { &CONFIG_JOYSTICK_DPAD_R,        "joystick_dpad_r",       -1 },
     { &CONFIG_JOYSTICK_DPAD_U,        "joystick_dpad_u",       -1 },
