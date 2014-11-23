@@ -393,6 +393,11 @@ void sol_draw_mesh(const struct d_mesh *mp, struct s_rend *rend, int p)
 {
     /* If this mesh has material matching the given flags... */
 
+    //senquack - particles are disabled on GCW Zero:
+#ifdef GCWZERO
+    if ((rend->curr_mtrl.base.fl & M_PARTICLE))  return;
+#endif
+
     if (sol_test_mtrl(mp->mtrl, p))
     {
         const size_t s = sizeof (struct d_vert);
@@ -410,7 +415,6 @@ void sol_draw_mesh(const struct d_mesh *mp, struct s_rend *rend, int p)
         glVertexPointer  (3, T, s, (GLvoid *) offsetof (struct d_vert, p));
         glNormalPointer  (   T, s, (GLvoid *) offsetof (struct d_vert, n));
 
-        //senquack - seems maybe it does need this:
         if (tex_env_stage(TEX_STAGE_SHADOW))
         {
             glTexCoordPointer(3, T, s, (GLvoid *) offsetof (struct d_vert, p));
@@ -424,15 +428,14 @@ void sol_draw_mesh(const struct d_mesh *mp, struct s_rend *rend, int p)
 
         /* Draw the mesh. */
 
-        //senquack - point sprites don't work on GCW Zero's GLES
+        //senquack - point sprites don't work on GCW Zero's GLES, we already exited the function if particle is detected
 //        if (rend->curr_mtrl.base.fl & M_PARTICLE) {
 //            glDrawArrays(GL_POINTS, 0, mp->vbc);
 //        } else {
 //            glDrawElements(GL_TRIANGLES, mp->ebc, GL_UNSIGNED_SHORT, 0);
 //        }
-        if (!(rend->curr_mtrl.base.fl & M_PARTICLE)) {
+        //senquack - replaced above if-else block with just this one line:
             glDrawElements(GL_TRIANGLES, mp->ebc, GL_UNSIGNED_SHORT, 0);
-        }
     }
 }
 
@@ -606,7 +609,6 @@ void sol_draw(const struct s_draw *draw, struct s_rend *rend, int mask, int test
 
 void sol_refl(const struct s_draw *draw, struct s_rend *rend)
 {
-    //senquack
     /* Disable shadowed material setup if not requested. */
 
     rend->skip_flags |= (draw->shadowed ? 0 : M_SHADOWED);
@@ -875,6 +877,11 @@ void r_apply_mtrl(struct s_rend *rend, int mi)
     int mp_flags = mp->base.fl & ~rend->skip_flags;
     int mq_flags = mq->base.fl;
 
+    //senquack - particles are disabled on GCW ZERO:
+#ifdef GCWZERO
+    if ((mp_flags & M_PARTICLE) ^ (mq_flags & M_PARTICLE)) return;
+#endif
+
 #if DEBUG_MTRL
     assert_mtrl(&rend->curr_mtrl);
 #endif
@@ -993,25 +1000,27 @@ void r_apply_mtrl(struct s_rend *rend, int mi)
 
     /* Point sprite. */
 
+    //senquack - particles are disabled on GCW Zero:
+#ifndef GCWZERO
     if ((mp_flags & M_PARTICLE) ^ (mq_flags & M_PARTICLE))
     {
-            //senquack - debug
-    //        if (mp_flags & M_PARTICLE)
-//        {
-//            const int s = video.device_h / 4;
-//            const GLfloat c[3] = { 0.0f, 0.0f, 1.0f };
-//
-//            glEnable (GL_POINT_SPRITE);
-//            glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
-//            glPointParameterfv_(GL_POINT_DISTANCE_ATTENUATION, c);
-//            glPointParameterf_ (GL_POINT_SIZE_MIN, 1);
-//            glPointParameterf_ (GL_POINT_SIZE_MAX, s);
-//        }
-//        else
-//        {
-//            glDisable(GL_POINT_SPRITE);
-//        }
+        if (mp_flags & M_PARTICLE)
+        {
+            const int s = video.device_h / 4;
+            const GLfloat c[3] = { 0.0f, 0.0f, 1.0f };
+
+            glEnable (GL_POINT_SPRITE);
+            glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
+            glPointParameterfv_(GL_POINT_DISTANCE_ATTENUATION, c);
+            glPointParameterf_ (GL_POINT_SIZE_MIN, 1);
+            glPointParameterf_ (GL_POINT_SIZE_MAX, s);
+        }
+        else
+        {
+            glDisable(GL_POINT_SPRITE);
+        }
     }
+#endif //GCWZERO
 
     /* Update current material state. */
 
