@@ -95,7 +95,10 @@ void game_view_fly(struct game_view *, const struct s_vary *, float);
 
 /*---------------------------------------------------------------------------*/
 
-#define UPS 90
+//senquack - this is the number of times a second the physics is calculated I believe:
+// Someone on forums mentioned 30 would be the absolute minimum number to ever use, original is 90:
+//#define UPS 90
+#define UPS 45
 #define DT  (1.0f / (float) UPS)
 
 /*
