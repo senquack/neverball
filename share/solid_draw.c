@@ -74,8 +74,9 @@ static void sol_transform(const struct s_vary *vary,
     if (!((v[0] == 0 && v[1] == 0 && v[2] == 0) || a == 0))
         glRotatef(V_DEG(a), v[0], v[1], v[2]);
 
+    //senquack - shadows are entirely disabled on GCW Zero
+#ifndef GCWZERO
     /* Apply the shadow transform to the texture matrix. */
-
     if (ui >= 0 && ui < vary->uc && vary->uv[ui].r > 0.0f)
     {
         struct v_ball *up = vary->uv + ui;
@@ -126,6 +127,7 @@ static void sol_transform(const struct s_vary *vary,
             tex_env_stage(TEX_STAGE_TEXTURE);
         }
     }
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -429,13 +431,15 @@ void sol_draw_mesh(const struct d_mesh *mp, struct s_rend *rend, int p)
         /* Draw the mesh. */
 
         //senquack - point sprites don't work on GCW Zero's GLES, we already exited the function if particle is detected
-//        if (rend->curr_mtrl.base.fl & M_PARTICLE) {
-//            glDrawArrays(GL_POINTS, 0, mp->vbc);
-//        } else {
-//            glDrawElements(GL_TRIANGLES, mp->ebc, GL_UNSIGNED_SHORT, 0);
-//        }
-        //senquack - replaced above if-else block with just this one line:
+#ifdef GCWZERO
+        glDrawElements(GL_TRIANGLES, mp->ebc, GL_UNSIGNED_SHORT, 0);
+#else
+        if (rend->curr_mtrl.base.fl & M_PARTICLE) {
+            glDrawArrays(GL_POINTS, 0, mp->vbc);
+        } else {
             glDrawElements(GL_TRIANGLES, mp->ebc, GL_UNSIGNED_SHORT, 0);
+        }
+#endif //GCWZERO
     }
 }
 
@@ -905,6 +909,8 @@ void r_apply_mtrl(struct s_rend *rend, int mi)
         glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, mp->base.h);
 
     /* Ball shadow. */
+    //senquack - shadows are entirely disabled on GCW Zero
+#ifndef GCWZERO
 
     if ((mp_flags & M_SHADOWED) ^ (mq_flags & M_SHADOWED))
     {
@@ -913,6 +919,7 @@ void r_apply_mtrl(struct s_rend *rend, int mi)
         else
             shad_draw_clr();
     }
+#endif
 
     /* Environment mapping. */
 
