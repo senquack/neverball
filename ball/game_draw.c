@@ -142,6 +142,19 @@ static void game_draw_jumps(struct s_rend *rend,
 
 /*---------------------------------------------------------------------------*/
 
+ //senquack - added new option to allow users to disable drawing of floor-tilting (helps with devices with tilt sensor)
+//static void game_draw_tilt(const struct game_draw *gd, int d)
+//{
+//    const struct game_tilt *tilt = &gd->tilt;
+//    const float *ball_p = gd->vary.uv[0].p;
+//
+//    /* Rotate the environment about the position of the ball. */
+//
+//    glTranslatef(+ball_p[0], +ball_p[1] * d, +ball_p[2]);
+//    glRotatef(-tilt->rz * d, tilt->z[0], tilt->z[1], tilt->z[2]);
+//    glRotatef(-tilt->rx * d, tilt->x[0], tilt->x[1], tilt->x[2]);
+//    glTranslatef(-ball_p[0], -ball_p[1] * d, -ball_p[2]);
+//}
 static void game_draw_tilt(const struct game_draw *gd, int d)
 {
     const struct game_tilt *tilt = &gd->tilt;
@@ -149,10 +162,26 @@ static void game_draw_tilt(const struct game_draw *gd, int d)
 
     /* Rotate the environment about the position of the ball. */
 
+#ifdef GCWZERO
+    if config_get_d(CONFIG_SCREEN_TILT_ENABLED) {
+       // Draw the floor as tilted if the new option is set
+       glTranslatef(+ball_p[0], +ball_p[1] * d, +ball_p[2]);
+       glRotatef(-tilt->rz * d, tilt->z[0], tilt->z[1], tilt->z[2]);
+       glRotatef(-tilt->rx * d, tilt->x[0], tilt->x[1], tilt->x[2]);
+       glTranslatef(-ball_p[0], -ball_p[1] * d, -ball_p[2]);
+    } else {
+       // Draw floor always as perfectly level if new option isn't set
+       glTranslatef(+ball_p[0], +ball_p[1] * d, +ball_p[2]);
+       glRotatef(-tilt->rz * d, 0.0f, tilt->z[1], 0.0f);
+       glRotatef(-tilt->rx * d, 0.0f, tilt->x[1], 0.0f);
+       glTranslatef(-ball_p[0], -ball_p[1] * d, -ball_p[2]);
+    }
+#else
     glTranslatef(+ball_p[0], +ball_p[1] * d, +ball_p[2]);
     glRotatef(-tilt->rz * d, tilt->z[0], tilt->z[1], tilt->z[2]);
     glRotatef(-tilt->rx * d, tilt->x[0], tilt->x[1], tilt->x[2]);
     glTranslatef(-ball_p[0], -ball_p[1] * d, -ball_p[2]);
+#endif //GCWZERO
 }
 
 static void game_refl_all(struct s_rend *rend, const struct game_draw *gd)
@@ -245,7 +274,7 @@ static void game_clip_ball(const struct game_draw *gd, int d, const float *p)
     pz[1] = gd->view.p[1] - c[1];
     pz[2] = gd->view.p[2] - c[2];
 
-    //senquack - no need to use double version of sqrt():
+    //senquack - no need to use double version of sqrt() explicitly:
 //    r = sqrt(pz[0] * pz[0] + pz[1] * pz[1] + pz[2] * pz[2]);
     r = sqrtf(pz[0] * pz[0] + pz[1] * pz[1] + pz[2] * pz[2]);
 
@@ -417,8 +446,7 @@ void game_draw(struct game_draw *gd, int pose, float t)
 
         gd->draw.shadow_ui = 0;
 
-        //senquack
-//        game_shadow_conf(pose, 1);
+        game_shadow_conf(pose, 1);
         r_draw_enable(&rend);
 
         video_push_persp(fov, 0.1f, FAR_DIST);
@@ -447,6 +475,7 @@ void game_draw(struct game_draw *gd, int pose, float t)
 
             /* Draw the background. */
 
+            //senquack  
             game_draw_back(&rend, gd, pose, +1, t);
 
             /* Draw the reflection. */
@@ -509,7 +538,6 @@ void game_draw(struct game_draw *gd, int pose, float t)
             }
 
             /* Draw the mirrors and the rest of the foreground. */
-
             game_refl_all (&rend, gd);
             game_draw_fore(&rend, gd, pose, T, +1, t);
         }
