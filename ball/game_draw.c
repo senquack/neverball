@@ -163,7 +163,7 @@ static void game_draw_tilt(const struct game_draw *gd, int d)
     /* Rotate the environment about the position of the ball. */
 
 #ifdef GCWZERO
-    if config_get_d(CONFIG_SCREEN_TILT_ENABLED) {
+    if (config_get_d(CONFIG_SCREEN_TILT_ENABLED)) {
        // Draw the floor as tilted if the new option is set
        glTranslatef(+ball_p[0], +ball_p[1] * d, +ball_p[2]);
        glRotatef(-tilt->rz * d, tilt->z[0], tilt->z[1], tilt->z[2]);
