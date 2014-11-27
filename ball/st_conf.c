@@ -33,6 +33,11 @@
 #include "st_ball.h"
 #include "st_shared.h"
 
+//senquack - new configuration options for GCW Zero:
+#ifdef GCWZERO
+#include "st_controls.h"
+#endif //GCWZERO
+
 extern const char TITLE[];
 extern const char ICON[];
 
@@ -40,7 +45,13 @@ extern const char ICON[];
 
 enum
 {
+   //senquack - on GCW Zero, removed video language controls, added controls configuration screen:
+#ifdef GCWZERO
+    CONF_CONTROLS = GUI_LAST,
+    CONF_VIDEO,
+#else
     CONF_VIDEO = GUI_LAST,
+#endif
     CONF_LANGUAGE,
     CONF_MOUSE_SENSE,
     CONF_SOUND_VOLUME,
@@ -89,6 +100,13 @@ static int conf_action(int tok, int val)
     case GUI_BACK:
         goto_state(&st_title);
         break;
+
+   //senquack - disabled Video configuration screen on GCW Zero, added controls configuration screen:
+#ifdef GCWZERO
+    case CONF_CONTROLS:
+        goto_state(&st_controls);
+        break;
+#endif //GCWZERO
 
     case CONF_VIDEO:
         goto_state(&st_video);
@@ -155,12 +173,23 @@ static int conf_gui(void)
 
         conf_header(id, _("Options"), GUI_BACK);
 
+   //senquack - disabled Video configuration screen on GCW Zero, added controls configuration screen:
+#ifdef GCWZERO
+        conf_state(id, _("Controls"), _("Configure"), CONF_CONTROLS);
+#else
         conf_state(id, _("Graphics"), _("Configure"), CONF_VIDEO);
+#endif //GCWZERO
 
         gui_space(id);
 
+   //senquack - altered for clarification on GCW Zero:
+#ifdef GCWZERO
+        conf_slider(id, _("USB Mouse Sensitivity"), CONF_MOUSE_SENSE, mouse,
+                    mouse_id, ARRAYSIZE(mouse_id));
+#else
         conf_slider(id, _("Mouse Sensitivity"), CONF_MOUSE_SENSE, mouse,
                     mouse_id, ARRAYSIZE(mouse_id));
+#endif //GCWZERO
 
         gui_space(id);
 
@@ -173,21 +202,31 @@ static int conf_gui(void)
 
         name_id = conf_state(id, _("Player Name"), " ", CONF_PLAYER);
         ball_id = conf_state(id, _("Ball Model"), " ", CONF_BALL);
+
+        //senquack - locales are not supported on GCW Zero's firmware:
+#ifndef GCWZERO
         lang_id = conf_state(id, _("Language"), " ", CONF_LANGUAGE);
+#endif //GCWZERO
 
         gui_layout(id, 0, 0);
 
+        //senquack - locales are not supported on GCW Zero's firmware:
+#ifndef GCWZERO
         gui_set_trunc(lang_id, TRUNC_TAIL);
+#endif //GCWZERO
         gui_set_trunc(name_id, TRUNC_TAIL);
         gui_set_trunc(ball_id, TRUNC_TAIL);
 
         gui_set_label(name_id, player);
         gui_set_label(ball_id, base_name(ball));
 
+#ifndef GCWZERO
+        //senquack - locales are not supported on GCW Zero's firmware:
         if (*config_get_s(CONFIG_LANGUAGE))
             gui_set_label(lang_id, lang_name(&curr_lang));
         else
             gui_set_label(lang_id, _("Default"));
+#endif //GCWZERO
     }
 
     return id;

@@ -110,6 +110,22 @@ int CONFIG_CAMERA_1_SPEED;
 int CONFIG_CAMERA_2_SPEED;
 int CONFIG_CAMERA_3_SPEED;
 
+//senquack - new configuration options for GCW Zero:
+#ifdef GCWZERO
+int CONFIG_GSENSOR_ENABLED;
+int CONFIG_GSENSOR_CENTERX;
+int CONFIG_GSENSOR_CENTERY;
+int CONFIG_GSENSOR_SENSITIVITY;
+int CONFIG_GSENSOR_DEADZONE;
+int CONFIG_GSENSOR_NONLINEAR;
+int CONFIG_ANALOG_ENABLED;
+int CONFIG_ANALOG_SENSITIVITY;
+//int CONFIG_ANALOG_DEADZONE;
+int CONFIG_SCREEN_TILT_ENABLED;
+#endif //GCWZERO
+
+/* String options. */
+
 
 /* String options. */
 
@@ -249,6 +265,20 @@ static struct
     { &CONFIG_CAMERA_1_SPEED, "camera_1_speed", 250 },
     { &CONFIG_CAMERA_2_SPEED, "camera_2_speed", 0 },
     { &CONFIG_CAMERA_3_SPEED, "camera_3_speed", -1 },
+
+//senquack - new configuration options for GCW Zero:
+#ifdef GCWZERO
+    { &CONFIG_GSENSOR_ENABLED, "gsensor_enabled", 0 },
+    { &CONFIG_GSENSOR_CENTERX, "gsensor_centerx", 0 },
+    { &CONFIG_GSENSOR_CENTERY, "gsensor_centery", 12500 },
+    { &CONFIG_GSENSOR_SENSITIVITY,  "gsensor_sensitivity", 5 },
+    { &CONFIG_GSENSOR_DEADZONE,     "gsensor_deadzone", 1 },
+    { &CONFIG_GSENSOR_NONLINEAR,    "gsensor_nonlinear", 0 },
+    { &CONFIG_ANALOG_ENABLED,       "analog_enabled", 1 },
+    { &CONFIG_ANALOG_SENSITIVITY,   "analog_sensitivity", 1 },
+//    { &CONFIG_ANALOG_DEADZONE, "analog_deadzone", 0 }, 
+    { &CONFIG_SCREEN_TILT_ENABLED, "screen_tilt_enabled", 1},
+#endif //GCWZERO
 };
 
 static struct

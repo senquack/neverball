@@ -107,6 +107,20 @@ extern int CONFIG_CAMERA_1_SPEED;
 extern int CONFIG_CAMERA_2_SPEED;
 extern int CONFIG_CAMERA_3_SPEED;
 
+//senquack - new configuration options for GCW Zero:
+#ifdef GCWZERO
+extern int CONFIG_GSENSOR_ENABLED;
+extern int CONFIG_GSENSOR_CENTERX;
+extern int CONFIG_GSENSOR_CENTERY;
+extern int CONFIG_GSENSOR_SENSITIVITY;
+extern int CONFIG_GSENSOR_DEADZONE;
+extern int CONFIG_GSENSOR_NONLINEAR;
+extern int CONFIG_ANALOG_ENABLED;
+extern int CONFIG_ANALOG_SENSITIVITY;
+//extern int CONFIG_ANALOG_DEADZONE;
+extern int CONFIG_SCREEN_TILT_ENABLED;
+#endif //GCWZERO
+
 /* String options. */
 
 extern int CONFIG_PLAYER;
