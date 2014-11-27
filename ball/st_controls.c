@@ -41,14 +41,14 @@ enum
    CONTROLS_GSENSOR_NONLINEAR,
    CONTROLS_ANALOG_ENABLED,
    CONTROLS_ANALOG_SENSITIVITY,
-//   CONTROLS_ANALOG_DEADZONE,
+   CONTROLS_ANALOG_DEADZONE,
    CONTROLS_SCREEN_TILT_ENABLED,
 };
 
 static int gsensor_sensitivity_id[11];
 static int analog_sensitivity_id[11];
 static int gsensor_deadzone_id[11];
-//static int analog_deadzone_id[11];
+static int analog_deadzone_id[11];
 
 static struct state *controls_back;
 
@@ -60,7 +60,7 @@ static int controls_action(int tok, int val)
     int gsensor_sensitivity = config_get_d(CONFIG_GSENSOR_SENSITIVITY);
     int analog_sensitivity = config_get_d(CONFIG_ANALOG_SENSITIVITY);
     int gsensor_deadzone = config_get_d(CONFIG_GSENSOR_DEADZONE);
-//    int analog_deadzone = config_get_d(CONFIG_ANALOG_DEADZONE);
+    int analog_deadzone = config_get_d(CONFIG_ANALOG_DEADZONE);
 
     audio_play(AUD_MENU, 1.0f);
 
@@ -117,11 +117,11 @@ static int controls_action(int tok, int val)
         gui_toggle(analog_sensitivity_id[analog_sensitivity]);
         break;
 
-//    case CONTROLS_ANALOG_DEADZONE:
-//        config_set_d(CONFIG_ANALOG_DEADZONE, val);
-//        gui_toggle(analog_deadzone_id[val]);
-//        gui_toggle(analog_deadzone_id[analog_deadzone]);
-//        break;
+    case CONTROLS_ANALOG_DEADZONE:
+        config_set_d(CONFIG_ANALOG_DEADZONE, val);
+        gui_toggle(analog_deadzone_id[val]);
+        gui_toggle(analog_deadzone_id[analog_deadzone]);
+        break;
 
     case CONTROLS_SCREEN_TILT_ENABLED:
         goto_state(&st_null);
@@ -149,7 +149,7 @@ static int controls_gui(void)
        int gsensor_sensitivity = config_get_d(CONFIG_GSENSOR_SENSITIVITY);
        int analog_sensitivity = config_get_d(CONFIG_ANALOG_SENSITIVITY);
        int gsensor_deadzone = config_get_d(CONFIG_GSENSOR_DEADZONE);
-//       int analog_deadzone = config_get_d(CONFIG_ANALOG_DEADZONE);
+       int analog_deadzone = config_get_d(CONFIG_ANALOG_DEADZONE);
 
         conf_toggle(id, _("G-Sensor"),   CONTROLS_GSENSOR_ENABLED,
                     config_get_d(CONFIG_GSENSOR_ENABLED), _("On"), 1, _("Off"), 0);
@@ -175,8 +175,8 @@ static int controls_gui(void)
         conf_slider(id, _("Analog sensitivity"), CONTROLS_ANALOG_SENSITIVITY, analog_sensitivity,
                     analog_sensitivity_id, ARRAYSIZE(analog_sensitivity_id));
 
-//        conf_slider(id, _("Analog deadzone"), CONTROLS_ANALOG_DEADZONE, analog_deadzone,
-//                    analog_deadzone_id, ARRAYSIZE(analog_deadzone_id));
+        conf_slider(id, _("Analog deadzone"), CONTROLS_ANALOG_DEADZONE, analog_deadzone,
+                    analog_deadzone_id, ARRAYSIZE(analog_deadzone_id));
 
         gui_space(id);
 

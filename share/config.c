@@ -120,7 +120,7 @@ int CONFIG_GSENSOR_DEADZONE;
 int CONFIG_GSENSOR_NONLINEAR;
 int CONFIG_ANALOG_ENABLED;
 int CONFIG_ANALOG_SENSITIVITY;
-//int CONFIG_ANALOG_DEADZONE;
+int CONFIG_ANALOG_DEADZONE;
 int CONFIG_SCREEN_TILT_ENABLED;
 #endif //GCWZERO
 
@@ -276,7 +276,7 @@ static struct
     { &CONFIG_GSENSOR_NONLINEAR,    "gsensor_nonlinear", 0 },
     { &CONFIG_ANALOG_ENABLED,       "analog_enabled", 1 },
     { &CONFIG_ANALOG_SENSITIVITY,   "analog_sensitivity", 1 },
-//    { &CONFIG_ANALOG_DEADZONE, "analog_deadzone", 0 }, 
+    { &CONFIG_ANALOG_DEADZONE, "analog_deadzone", 0 }, 
     { &CONFIG_SCREEN_TILT_ENABLED, "screen_tilt_enabled", 1},
 #endif //GCWZERO
 };

@@ -313,6 +313,7 @@ BALL_OBJS := \
 	ball/st_pause.o     \
 	ball/st_ball.o      \
 	ball/st_controls.o  \
+	ball/gsensor.o      \
 	ball/main.o
 PUTT_OBJS := \
 	share/lang.o        \

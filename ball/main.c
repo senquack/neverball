@@ -42,20 +42,29 @@
 #include "st_level.h"
 #include "st_pause.h"
 
-//senquack - for new code in make_dirs_and_migrate():
+
 #ifdef GCWZERO
+//senquack - for new code in make_dirs_and_migrate():
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
+#include <errno.h>
+
+//senquack - for new code in gsensor.c
+#include "gsensor.h"
 
 // This is also defined within the Makefile, but placed here to doubly-ensure symlink() is correctly declared:
 #define POSIX_C_SOURCE 200112L
-#include <unistd.h>
-
-#include <errno.h>
 #endif //GCWZERO
 
 const char TITLE[] = "Neverball " VERSION;
 const char ICON[] = "icon/neverball.png";
+
+//senquack - added gsensor support - these allow us to filter how the game responds to the two joysticks
+#ifdef GCWZERO
+extern struct state st_play_loop; //added so I know whether to submit gsensor inputs to the game (defined in st_play.c)
+static int joy_dev_idx = 0;         //SDL device index of the gcw controls (so we can filter inputs)
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -130,6 +139,7 @@ static int handle_key_dn(SDL_Event *e)
         break;
 
     default:
+        //senquack -- DEBUG - disabling this allows main menu usage only with analog:
         if (config_tst_d(CONFIG_KEY_FORWARD, c))
             st_stick(config_get_d(CONFIG_JOYSTICK_AXIS_Y0), -1.0f);
         else if (config_tst_d(CONFIG_KEY_BACKWARD, c))
@@ -260,7 +270,96 @@ static int loop(void)
             break;
 
         case SDL_JOYAXISMOTION:
+#ifdef GCWZERO
+            //senquack - added gsensor & analog stick support:
+            if (e.jaxis.which == gsensor_dev_idx) {
+               if (config_get_d(CONFIG_GSENSOR_ENABLED) && joy_gsensor && curr_state() == &st_play_loop ) {
+                  // This is a gsensor input
+                  int gsensor_centerx = config_get_d(CONFIG_GSENSOR_CENTERX);
+                  int gsensor_centery = config_get_d(CONFIG_GSENSOR_CENTERY);
+                  int gsensor_deadzone = config_get_d(CONFIG_GSENSOR_DEADZONE) * 500;
+                  int gsensor_effective_max = gsensor_max - (config_get_d(CONFIG_GSENSOR_SENSITIVITY) * 1000);
+                  int gsensor_val = e.jaxis.value;
+
+                  if (abs(gsensor_centerx) > abs(gsensor_centery)) {
+                     gsensor_effective_max -= abs(gsensor_centerx);
+                  } else {
+                     gsensor_effective_max -= abs(gsensor_centery);
+                  }
+
+                  if (e.jaxis.axis == 0) {
+                     gsensor_val -= gsensor_centerx;
+                     if (gsensor_val < -gsensor_effective_max) {
+                        gsensor_val = -gsensor_effective_max;
+                     } else if (gsensor_val > gsensor_effective_max) {
+                        gsensor_val = gsensor_effective_max;
+                     }
+                  } else {
+                     gsensor_val -= gsensor_centery;
+                     if (gsensor_val < -gsensor_effective_max) {
+                        gsensor_val = -gsensor_effective_max;
+                     } else if (gsensor_val > gsensor_effective_max) {
+                        gsensor_val = gsensor_effective_max;
+                     }
+                  }
+
+                  float gsensor_fval;
+
+                  if (abs(gsensor_val) < gsensor_deadzone) {
+                     gsensor_fval = 0;
+                  } else {
+                     gsensor_fval = (float)gsensor_val;
+                     gsensor_fval /= (float)gsensor_effective_max;   // Convert to number between -1.0 and 1.0
+
+                     if (gsensor_fval > 1.0) {
+                        gsensor_fval = 1.0;
+                     } else if (gsensor_fval < -1.0) {
+                        gsensor_fval = -1.0;
+                     }
+
+                     // Is non-linear sensitivity requested?
+                     if (config_get_d(CONFIG_GSENSOR_NONLINEAR)) {
+                        gsensor_fval = gsensor_fval * gsensor_fval * gsensor_fval;
+                     }
+                  }
+                  st_stick(e.jaxis.axis, gsensor_fval);
+               }
+            } else {
+               // This is an input from the GCW analog stick:
+               int analog_val = e.jaxis.value;
+               // Only accept inputs if we're in the actual game and the input is more than the deadzone:
+               if (config_get_d(CONFIG_ANALOG_ENABLED) && curr_state() == &st_play_loop) {
+                  int analog_sensitivity = config_get_d(CONFIG_ANALOG_SENSITIVITY);
+                  int analog_effective_max;
+                  if (analog_sensitivity > 1) {
+                     analog_effective_max = 32767 - ((analog_sensitivity-1) * 2000);
+                  } else {
+                     analog_effective_max = 32767;
+                  }
+
+                  int analog_deadzone = config_get_d(CONFIG_ANALOG_DEADZONE) * 1000;
+                  float analog_fval;
+                  if (abs(analog_val) < analog_deadzone) {
+                     analog_fval = 0;
+                  } else {
+                     analog_fval = (float)analog_val;
+                     analog_fval /= (float)analog_effective_max;  // Convert to value between -1.0 and 1.0
+                     if (analog_fval > 1.0) {
+                        analog_fval = 1.0;
+                     } else if (analog_fval < -1.0) {
+                        analog_fval = -1.0;
+                     }
+                     if (analog_sensitivity < 1) {
+                        // if sensitivity is set very low, use non-linear sensitivity:
+                        analog_fval = analog_fval * analog_fval * analog_fval;
+                     }
+                  }
+                  st_stick(e.jaxis.axis, analog_fval);
+               }
+            }
+#else
             st_stick(e.jaxis.axis, JOY_VALUE(e.jaxis.value));
+#endif //GCWZERO
             break;
 
         case SDL_JOYBUTTONDOWN:
@@ -278,7 +377,8 @@ static int loop(void)
     }
 
     /* Process events via the tilt sensor API. */
-
+//senquack - not used on GCW zero:
+#ifndef GCWZERO
     if (tilt_stat())
     {
         int b;
@@ -320,6 +420,7 @@ static int loop(void)
             else d = st_buttn(b, s);
         }
     }
+#endif //GCWZERO
 
     return d;
 }
@@ -503,9 +604,12 @@ static void make_dirs_and_migrate(void)
 
 /*---------------------------------------------------------------------------*/
 
+
 int main(int argc, char *argv[])
 {
     SDL_Joystick *joy = NULL;
+
+
     int t1, t0;
 
     if (!fs_init(argv[0]))
@@ -540,12 +644,60 @@ int main(int argc, char *argv[])
 
     /* Initialize joystick. */
 
+//senquack - added support for GCW Zero's tilt sensor (g-sensor):
+//    if (config_get_d(CONFIG_JOYSTICK) && SDL_NumJoysticks() > 0)
+//    {
+//        joy = SDL_JoystickOpen(config_get_d(CONFIG_JOYSTICK_DEVICE));
+//        if (joy)
+//            SDL_JoystickEventState(SDL_ENABLE);
+//    }
+#ifdef GCWZERO
+	printf ("Initializing joysticks for GCW Zero.. Total joysticks reported: %d\n", SDL_NumJoysticks());
+    SDL_JoystickEventState(SDL_ENABLE);
+    SDL_Joystick *tmp_joy = NULL;
+	for (int i = 0; i < SDL_NumJoysticks(); i++)
+	{
+        tmp_joy = SDL_JoystickOpen(i);
+        if (tmp_joy) {
+            printf("Joystick %u: \"%s\"\n", i, SDL_JoystickName(tmp_joy));
+            if (strcmp(SDL_JoystickName(tmp_joy), "linkdev device (Analog 2-axis 8-button 2-hat)") == 0) {
+                joy = tmp_joy;
+                joy_dev_idx = i;
+				printf("Recognized GCW Zero's built-in analog stick..\n");
+            } else if (strcmp(SDL_JoystickName(tmp_joy), "mxc6225") == 0) {
+                joy_gsensor = tmp_joy;
+                gsensor_dev_idx = i;
+                printf("Recognized GCW Zero's built-in g-sensor..\n");
+            }
+		}
+	}
+
+    if (!joy_gsensor) {
+        printf("Error: failed to recognize GCW Zero's g-sensor\n");
+    }
+
+    if (!joy) {
+        printf("Error: failed to recognize GCW Zero's joystick controls\n");
+        if (SDL_NumJoysticks() > 0) {
+            joy = SDL_JoystickOpen(0);
+        }
+        if (!joy) {
+            printf("Error: failed to recognize any joysticks at all!\n");
+        } else {
+            printf("Using this joystick as default instead: %s\n", SDL_JoystickName(joy));
+        }
+    } 
+
+#else
     if (config_get_d(CONFIG_JOYSTICK) && SDL_NumJoysticks() > 0)
     {
         joy = SDL_JoystickOpen(config_get_d(CONFIG_JOYSTICK_DEVICE));
         if (joy)
             SDL_JoystickEventState(SDL_ENABLE);
     }
+#endif //GCWZERO
+
+    
 
     /* Initialize audio. */
 
@@ -634,6 +786,12 @@ int main(int argc, char *argv[])
 
     if (joy)
         SDL_JoystickClose(joy);
+
+//senquack - added support for GCW Zero's tilt sensor (g-sensor):
+#ifdef GCWZERO
+    if (joy_gsensor)
+        SDL_JoystickClose(joy_gsensor);
+#endif
 
     tilt_free();
     hmd_free();
