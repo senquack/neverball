@@ -45,11 +45,12 @@ extern const char ICON[];
 
 enum
 {
-   //senquack - on GCW Zero, removed video language controls, added controls configuration screen and cheat option:
+   //senquack - on GCW Zero, removed video language controls, added controls screen and fps and cheat options:
 #ifdef GCWZERO
     CONF_CONTROLS = GUI_LAST,
     CONF_VIDEO,
     CONF_CHEAT,
+    CONF_FPS,
 #else
     CONF_VIDEO = GUI_LAST,
 #endif
@@ -111,6 +112,12 @@ static int conf_action(int tok, int val)
     case CONF_CHEAT:
         goto_state(&st_null);
         config_set_d(CONFIG_CHEAT, val);
+        goto_state(&st_conf);
+        break;
+
+    case CONF_FPS:
+        goto_state(&st_null);
+        config_set_d(CONFIG_FPS, val);
         goto_state(&st_conf);
         break;
 #endif //GCWZERO
@@ -207,10 +214,12 @@ static int conf_gui(void)
 
         gui_space(id);
 
-//senquack - added cheat mode to unlock levels:
+//senquack - added cheat mode to unlock levels, and FPS option:
 #ifdef GCWZERO
         conf_toggle(id, _("Cheat mode"),   CONF_CHEAT,
                     config_get_d(CONFIG_CHEAT), _("On"), 1, _("Off"), 0);
+        conf_toggle(id, _("Show FPS"),   CONF_FPS,
+                    config_get_d(CONFIG_FPS), _("On"), 1, _("Off"), 0);
 #endif
 
         name_id = conf_state(id, _("Player Name"), " ", CONF_PLAYER);
