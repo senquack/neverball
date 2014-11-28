@@ -992,10 +992,18 @@ static void stroke_point(int id, int x, int y, int dx, int dy)
 
 static void stroke_stick(int id, int a, float v, int bump)
 {
+    //senquack - made it so rotation is a lot finer using the DPAD on GCW Zero:
+#ifdef GCWZERO
+    if      (config_tst_d(CONFIG_JOYSTICK_AXIS_X0, a))
+        stroke_rotate = 2 * v;
+    else if (config_tst_d(CONFIG_JOYSTICK_AXIS_Y0, a))
+        stroke_mag = -6 * v;
+#else
     if      (config_tst_d(CONFIG_JOYSTICK_AXIS_X0, a))
         stroke_rotate = 6 * v;
     else if (config_tst_d(CONFIG_JOYSTICK_AXIS_Y0, a))
         stroke_mag = -6 * v;
+#endif //GCWZERO
 }
 
 static int stroke_click(int b, int d)
@@ -1007,11 +1015,33 @@ static int stroke_buttn(int b, int d)
 {
     if (d)
     {
+        //senquack - made it so you can rotate fast using triggers on GCW Zero:
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L1, b)) {
+            stroke_rotate = 24;
+        }
+
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_R1, b)) {
+            stroke_rotate = -24;
+        }
+
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_A, b))
             return goto_state(&st_roll);
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_START, b))
             return goto_pause(&st_over);
+        //senquack - made it so you can rotate fast using triggers on GCW Zero:
+#ifdef GCWZERO
+    } else {
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L1, b)) {
+            stroke_rotate = 0;
+        }
+
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_R1, b)) {
+            stroke_rotate = 0;
+        }
     }
+#else
+    }
+#endif //GCWZERO
     return 1;
 }
 
