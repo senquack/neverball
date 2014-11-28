@@ -191,6 +191,11 @@ static int loop(void)
 
     int ax, ay, dx, dy;
 
+    //senquack - added these to handle HAT events:
+#ifdef GCWZERO
+    int axis;
+    float val;
+#endif
     /* Process SDL events. */
 
     while (d && SDL_PollEvent(&e))
@@ -228,6 +233,8 @@ static int loop(void)
             d = st_click(e.button.button, 0);
             break;
 
+//senquack - on GCW Zero, keyboard events are disabled (SDL2.0 does not disable them automatically)
+#ifndef GCWZERO
         case SDL_KEYDOWN:
             d = handle_key_dn(&e);
             break;
@@ -235,6 +242,7 @@ static int loop(void)
         case SDL_KEYUP:
             d = handle_key_up(&e);
             break;
+#endif //GCWZERO
 
         case SDL_WINDOWEVENT:
             switch (e.window.event)
@@ -362,6 +370,73 @@ static int loop(void)
 #endif //GCWZERO
             break;
 
+         //senquack - DPAD on GCWZERO is a HAT so we need to add support for those events:
+#ifdef GCWZERO
+        case SDL_JOYHATMOTION:
+            switch (e.jhat.value) {
+               case SDL_HAT_UP:
+                  axis = 1;
+                  val = -1.0;
+                  st_stick(axis, val);
+                  break;
+               case SDL_HAT_DOWN:
+                  axis = 1;
+                  val = 1.0;
+                  st_stick(axis, val);
+                  break;
+               case SDL_HAT_LEFT:
+                  axis = 0;
+                  val = -1.0;
+                  st_stick(axis, val);
+                  break;
+               case SDL_HAT_RIGHT:
+                  axis = 0;
+                  val = 1.0;
+                  st_stick(axis, val);
+                  break;
+               case SDL_HAT_LEFTUP:
+                  axis = 0;
+                  val = -1.0;
+                  st_stick(axis, val);
+                  axis = 1;
+                  val = -1.0;
+                  st_stick(axis, val);
+                  break;
+               case SDL_HAT_RIGHTUP:
+                  axis = 0;
+                  val = 1.0;
+                  st_stick(axis, val);
+                  axis = 1;
+                  val = -1.0;
+                  st_stick(axis, val);
+                  break;
+               case SDL_HAT_LEFTDOWN:
+                  axis = 0;
+                  val = -1.0;
+                  st_stick(axis, val);
+                  axis = 1;
+                  val = 1.0;
+                  st_stick(axis, val);
+                  break;
+               case SDL_HAT_RIGHTDOWN:
+                  axis = 0;
+                  val = 1.0;
+                  st_stick(axis, val);
+                  axis = 1;
+                  val = 1.0;
+                  st_stick(axis, val);
+                  break;
+               case SDL_HAT_CENTERED:
+                  axis = 0;
+                  val = 0;
+                  st_stick(axis, val);
+                  axis = 1;
+                  st_stick(axis, val);
+               default:
+                  break;
+            }
+            break;
+#endif //GCWZERO
         case SDL_JOYBUTTONDOWN:
             d = st_buttn(e.jbutton.button, 1);
             break;
