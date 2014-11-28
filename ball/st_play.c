@@ -520,8 +520,15 @@ static int play_loop_buttn(int b, int d)
             rot_set(DIR_R, 1.0f, 0);
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L1, b))
             rot_set(DIR_L, 1.0f, 0);
+//senquack - modified to make button Y the fast rotate button:
+#ifdef GCWZERO
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_Y, b)) {
+            fast_rotate = 1;
+        }
+#else
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L2, b))
             fast_rotate = 1;
+#endif //GCWZERO
 
         buttn_camera(b);
     }
@@ -531,8 +538,15 @@ static int play_loop_buttn(int b, int d)
             rot_clr(DIR_R);
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L1, b))
             rot_clr(DIR_L);
+//senquack - modified to make button Y the fast rotate button:
+#ifdef GCWZERO
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_Y, b)) {
+            fast_rotate = 0;
+        }
+#else
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L2, b))
             fast_rotate = 0;
+#endif //GCWZERO
     }
     return 1;
 }
