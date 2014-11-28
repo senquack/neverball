@@ -108,15 +108,17 @@ static int conf_enter(struct state *st, struct state *prev)
 
         gui_space(id);
 
+//senquack - removed graphics options on GCW Zero
+#ifndef GCWZERO
         if ((jd = gui_harray(id)) &&
             (kd = gui_harray(jd)))
         {
             gui_state(kd, _("Configure"), GUI_SML, CONF_VIDEO, 0);
-
             gui_label(jd, _("Graphics"),  GUI_SML, 0, 0);
         }
 
         gui_space(id);
+#endif //GCWZERO
 
         if ((jd = gui_harray(id)) &&
             (kd = gui_harray(jd)))
@@ -150,6 +152,8 @@ static int conf_enter(struct state *st, struct state *prev)
             gui_label(jd, _("Music Volume"), GUI_SML, 0, 0);
         }
 
+//senquack - removed Language options on GCW Zero (locale not supported)
+#ifndef GCWZERO
         gui_space(id);
 
         if ((jd = gui_harray(id)) &&
@@ -159,6 +163,7 @@ static int conf_enter(struct state *st, struct state *prev)
 
             gui_label(jd, _("Language"),  GUI_SML, 0, 0);
         }
+#endif //GCWZERO
 
         gui_layout(id, 0, 0);
     }
