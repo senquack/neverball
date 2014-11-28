@@ -258,8 +258,15 @@ static struct
     { &CONFIG_VIEW_DP,     "view_dp",     75 },
     { &CONFIG_VIEW_DC,     "view_dc",     25 },
     { &CONFIG_VIEW_DZ,     "view_dz",     200 },
+    //senquack - In Neverball, rotate_slow is the default speed.. On GCW Zero, we will therefore make rotate_slow
+    //              be faster than rotate_fast, and both are now configurable in the settings screen.
+#ifdef GCWZERO
+    { &CONFIG_ROTATE_FAST, "rotate_fast", 100 },
+    { &CONFIG_ROTATE_SLOW, "rotate_slow", 350 },
+#else
     { &CONFIG_ROTATE_FAST, "rotate_fast", 300 },
     { &CONFIG_ROTATE_SLOW, "rotate_slow", 150 },
+#endif //GCWZERO
     { &CONFIG_CHEAT,       "cheat",       0 },
     { &CONFIG_STATS,       "stats",       0 },
     { &CONFIG_SCREENSHOT,  "screenshot",  0 },
@@ -275,7 +282,7 @@ static struct
     { &CONFIG_GSENSOR_CENTERX, "gsensor_centerx", 0 },
     { &CONFIG_GSENSOR_CENTERY, "gsensor_centery", 12500 },
     { &CONFIG_GSENSOR_SENSITIVITY,  "gsensor_sensitivity", 5 },
-    { &CONFIG_GSENSOR_DEADZONE,     "gsensor_deadzone", 1 },
+    { &CONFIG_GSENSOR_DEADZONE,     "gsensor_deadzone", 3 },
     { &CONFIG_GSENSOR_NONLINEAR,    "gsensor_nonlinear", 0 },
     { &CONFIG_ANALOG_ENABLED,       "analog_enabled", 1 },
     { &CONFIG_ANALOG_SENSITIVITY,   "analog_sensitivity", 1 },

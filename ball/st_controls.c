@@ -30,6 +30,23 @@
 
 #define AUD_MENU "snd/menu.ogg"
 
+//senquack - added two options to control camera rotation speeds
+#ifdef GCWZERO
+#define ROT_SPEED_RANGE_MIN  50
+#define ROT_SPEED_RANGE_INC  50
+#define ROT_SPEED_RANGE_MAX (ROT_SPEED_RANGE_MIN + (ROT_SPEED_RANGE_INC * 10))
+
+/*
+ * Map rot_speed values to [0, 10]
+ */
+#define ROT_SPEED_RANGE_MAP(m) \
+    CLAMP(0, ((m - ROT_SPEED_RANGE_MIN) / ROT_SPEED_RANGE_INC), 10)
+
+#define ROT_SPEED_RANGE_UNMAP(i) \
+    (ROT_SPEED_RANGE_MIN + (i * ROT_SPEED_RANGE_INC))
+#endif //GCWZERO
+
+
 /*---------------------------------------------------------------------------*/
 
 enum
@@ -42,6 +59,8 @@ enum
    CONTROLS_ANALOG_ENABLED,
    CONTROLS_ANALOG_SENSITIVITY,
    CONTROLS_ANALOG_DEADZONE,
+   CONTROLS_DEFAULT_ROT_SPEED,
+   CONTROLS_MODIFIED_ROT_SPEED,
    CONTROLS_SCREEN_TILT_ENABLED,
 };
 
@@ -49,6 +68,8 @@ static int gsensor_sensitivity_id[11];
 static int analog_sensitivity_id[11];
 static int gsensor_deadzone_id[11];
 static int analog_deadzone_id[11];
+static int default_rot_speed_id[11];
+static int modified_rot_speed_id[11];
 
 static struct state *controls_back;
 
@@ -61,6 +82,8 @@ static int controls_action(int tok, int val)
     int analog_sensitivity = config_get_d(CONFIG_ANALOG_SENSITIVITY);
     int gsensor_deadzone = config_get_d(CONFIG_GSENSOR_DEADZONE);
     int analog_deadzone = config_get_d(CONFIG_ANALOG_DEADZONE);
+    int default_rot_speed = ROT_SPEED_RANGE_MAP(config_get_d(CONFIG_ROTATE_SLOW));  
+    int modified_rot_speed = ROT_SPEED_RANGE_MAP(config_get_d(CONFIG_ROTATE_FAST));
 
     audio_play(AUD_MENU, 1.0f);
 
@@ -123,6 +146,18 @@ static int controls_action(int tok, int val)
         gui_toggle(analog_deadzone_id[analog_deadzone]);
         break;
 
+    case CONTROLS_DEFAULT_ROT_SPEED:
+        config_set_d(CONFIG_ROTATE_SLOW, ROT_SPEED_RANGE_UNMAP(val));
+        gui_toggle(default_rot_speed_id[val]);
+        gui_toggle(default_rot_speed_id[default_rot_speed]);
+        break;
+
+    case CONTROLS_MODIFIED_ROT_SPEED:
+        config_set_d(CONFIG_ROTATE_FAST, ROT_SPEED_RANGE_UNMAP(val));
+        gui_toggle(modified_rot_speed_id[val]);
+        gui_toggle(modified_rot_speed_id[modified_rot_speed]);
+        break;
+
     case CONTROLS_SCREEN_TILT_ENABLED:
         goto_state(&st_null);
         config_set_d(CONFIG_SCREEN_TILT_ENABLED, val);
@@ -150,6 +185,8 @@ static int controls_gui(void)
        int analog_sensitivity = config_get_d(CONFIG_ANALOG_SENSITIVITY);
        int gsensor_deadzone = config_get_d(CONFIG_GSENSOR_DEADZONE);
        int analog_deadzone = config_get_d(CONFIG_ANALOG_DEADZONE);
+       int default_rot_speed = ROT_SPEED_RANGE_MAP(config_get_d(CONFIG_ROTATE_SLOW));
+       int modified_rot_speed = ROT_SPEED_RANGE_MAP(config_get_d(CONFIG_ROTATE_FAST));
 
         conf_toggle(id, _("G-Sensor"),   CONTROLS_GSENSOR_ENABLED,
                     config_get_d(CONFIG_GSENSOR_ENABLED), _("On"), 1, _("Off"), 0);
@@ -179,6 +216,12 @@ static int controls_gui(void)
                     analog_deadzone_id, ARRAYSIZE(analog_deadzone_id));
 
         gui_space(id);
+        
+        conf_slider(id, _("Default camera rotation speed"), CONTROLS_DEFAULT_ROT_SPEED, default_rot_speed,
+                    default_rot_speed_id, ARRAYSIZE(default_rot_speed_id));
+
+        conf_slider(id, _("Modified camera rotation speed"), CONTROLS_MODIFIED_ROT_SPEED, modified_rot_speed,
+                    modified_rot_speed_id, ARRAYSIZE(modified_rot_speed_id));
 
         conf_toggle(id, _("Draw floor tilt"),   CONTROLS_SCREEN_TILT_ENABLED,
                     config_get_d(CONFIG_SCREEN_TILT_ENABLED), _("On"), 1, _("Off"), 0);
