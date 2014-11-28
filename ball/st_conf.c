@@ -45,10 +45,11 @@ extern const char ICON[];
 
 enum
 {
-   //senquack - on GCW Zero, removed video language controls, added controls configuration screen:
+   //senquack - on GCW Zero, removed video language controls, added controls configuration screen and cheat option:
 #ifdef GCWZERO
     CONF_CONTROLS = GUI_LAST,
     CONF_VIDEO,
+    CONF_CHEAT,
 #else
     CONF_VIDEO = GUI_LAST,
 #endif
@@ -101,10 +102,16 @@ static int conf_action(int tok, int val)
         goto_state(&st_title);
         break;
 
-   //senquack - disabled Video configuration screen on GCW Zero, added controls configuration screen:
+   //senquack - disabled Video configuration screen on GCW Zero, added controls configuration screen, cheat option:
 #ifdef GCWZERO
     case CONF_CONTROLS:
         goto_state(&st_controls);
+        break;
+
+    case CONF_CHEAT:
+        goto_state(&st_null);
+        config_set_d(CONFIG_CHEAT, val);
+        goto_state(&st_conf);
         break;
 #endif //GCWZERO
 
@@ -182,7 +189,7 @@ static int conf_gui(void)
 
         gui_space(id);
 
-   //senquack - altered for clarification on GCW Zero:
+   //senquack - altered for clarification on GCW Zero
 #ifdef GCWZERO
         conf_slider(id, _("USB Mouse Sensitivity"), CONF_MOUSE_SENSE, mouse,
                     mouse_id, ARRAYSIZE(mouse_id));
@@ -199,6 +206,12 @@ static int conf_gui(void)
                     music_id, ARRAYSIZE(music_id));
 
         gui_space(id);
+
+//senquack - added cheat mode to unlock levels:
+#ifdef GCWZERO
+        conf_toggle(id, _("Cheat mode"),   CONF_CHEAT,
+                    config_get_d(CONFIG_CHEAT), _("On"), 1, _("Off"), 0);
+#endif
 
         name_id = conf_state(id, _("Player Name"), " ", CONF_PLAYER);
         ball_id = conf_state(id, _("Ball Model"), " ", CONF_BALL);
