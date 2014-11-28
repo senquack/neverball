@@ -112,11 +112,20 @@ static int help_menu(int id)
 
 static int page_rules(int id)
 {
+//senquack - customized for GCW Zero port:
+#ifdef GCWZERO
+    const char *s0 = _(
+        "Use the DPAD, Analog Stick,\\"
+        "or enable the G-Sensor to\\"
+        "tilt the floor causing the\\"
+        "ball to roll.\\");
+#else
     const char *s0 = _(
         "Move the mouse or joystick\\"
         "or use keyboard arrows to\\"
         "tilt the floor causing the\\"
         "ball to roll.\\");
+#endif //GCWZERO
     const char *s1 = _(
         "Roll over coins to collect\\"
         "them.  Collect coins to\\"
@@ -200,6 +209,35 @@ static int page_controls(int id)
 
     if ((jd = gui_vstack(id)))
     {
+//senquack - customized for GCW Zero port:
+#ifdef GCWZERO
+        if ((kd = gui_harray(jd)))
+        {
+            gui_label(kd, "Exit / Pause",   GUI_SML, gui_wht, gui_wht);
+            gui_label(kd, "Start button", GUI_SML, gui_yel, gui_yel);
+        }
+
+        if ((kd = gui_harray(jd)))
+        {
+            gui_label(kd, "Rotate camera left / right",   GUI_SML, gui_wht, gui_wht);
+            gui_label(kd, "L / R triggers", GUI_SML, gui_yel, gui_yel);
+        }
+
+        if ((kd = gui_harray(jd)))
+        {
+            gui_label(kd, "Modify camera rotation speed",   GUI_SML, gui_wht, gui_wht);
+            gui_label(kd, "Y button", GUI_SML, gui_yel, gui_yel);
+        }
+
+        if ((kd = gui_harray(jd)))
+        {
+            gui_label(kd, "Change camera mode",   GUI_SML, gui_wht, gui_wht);
+            gui_label(kd, "X button", GUI_SML, gui_yel, gui_yel);
+        }
+
+        gui_set_rect(jd, GUI_ALL);
+    }
+#else
         if ((kd = gui_harray(jd)))
         {
             gui_label(kd, s_exit,   GUI_SML, gui_wht, gui_wht);
@@ -232,6 +270,7 @@ static int page_controls(int id)
     gui_space(id);
 
     gui_multi(id, s_rotate, GUI_SML, gui_wht, gui_wht);
+#endif //GCWZERO
 
     return id;
 }
