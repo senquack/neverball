@@ -140,7 +140,10 @@ fs_file fs_open(const char *path, const char *mode)
 
         if (fh->handle)
         {
+//senquack - no need for buffering on GCW Zero, we're not using a ZIP and already using SquashFS
+#ifndef GCWZERO
             PHYSFS_setBuffer(fh->handle, 0x2000);
+#endif
         }
         else
         {
