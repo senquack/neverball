@@ -822,7 +822,13 @@ static int next_buttn(int b, int d)
 {
     if (d)
     {
+        //senquack - on GCW Zero, you can press any A/X/Y/B to proceed (makes more sense)
+#ifdef GCWZERO
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_A, b) || config_tst_d(CONFIG_JOYSTICK_BUTTON_B, b) ||
+                config_tst_d(CONFIG_JOYSTICK_BUTTON_X, b) || config_tst_d(CONFIG_JOYSTICK_BUTTON_Y, b))
+#else
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_A, b))
+#endif //GCWZERO
         {
             if (num > 0)
             {
@@ -839,8 +845,11 @@ static int next_buttn(int b, int d)
             }
             return goto_state(&st_flyby);
         }
+        //senquack - It really makes no sense to pause when asking to go the next hole, disabling that on GCW Zero:
+#ifndef GCWZERO
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_B, b))
             return goto_pause(&st_over);
+#endif //GCWZERO
     }
     return 1;
 }
@@ -864,8 +873,13 @@ static int poser_buttn(int b, int d)
     {
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_A, b))
             return goto_state(&st_next);
-        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_B, b))
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_B, b)) {
             return goto_state(&st_next);
+        }
+        //senquack - added X & Y to do the same on GCW Zero:
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_X, b) || config_tst_d(CONFIG_JOYSTICK_BUTTON_Y, b)) {
+            return goto_state(&st_next);
+        }
     }
     return 1;
 }
@@ -927,9 +941,15 @@ static int flyby_buttn(int b, int d)
             game_set_fly(0.f);
             return goto_state(&st_stroke);
         }
+        //senquack - On GCW Zero, Button B should do nothing, it's annoying and confusing otherwise
+#ifdef GCWZERO
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_START, b))
+            return goto_pause(&st_over);
+#else
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_B, b) ||
             config_tst_d(CONFIG_JOYSTICK_BUTTON_START, b))
             return goto_pause(&st_over);
+#endif //GCWZERO
     }
     return 1;
 }
@@ -1100,9 +1120,15 @@ static int roll_buttn(int b, int d)
 {
     if (d)
     {
+        //senquack - On GCW Zero, Button B should do nothing, it's annoying and confusing otherwise
+#ifdef GCWZERO
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_START, b))
+            return goto_pause(&st_over);
+#else
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_B, b) ||
             config_tst_d(CONFIG_JOYSTICK_BUTTON_START, b))
             return goto_pause(&st_over);
+#endif //GCWZERO
     }
     return 1;
 }
@@ -1166,15 +1192,23 @@ static int goal_buttn(int b, int d)
 {
     if (d)
     {
+        //senquack - on GCW Zero, A,B,X,Y will all proceed, instead of this silly pausing-with-B thing:
+#ifdef GCWZERO
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_A, b) || config_tst_d(CONFIG_JOYSTICK_BUTTON_B, b) ||
+            config_tst_d(CONFIG_JOYSTICK_BUTTON_X, b) || config_tst_d(CONFIG_JOYSTICK_BUTTON_Y, b)) 
+#else
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_A, b))
+#endif //GCWZERO
         {
             if (hole_next())
                 goto_state(&st_next);
             else
                 goto_state(&st_score);
         }
+#ifndef GCWZERO
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_B, b))
             return goto_pause(&st_over);
+#endif //GCWZERO
     }
     return 1;
 }
@@ -1236,15 +1270,25 @@ static int stop_buttn(int b, int d)
 {
     if (d)
     {
+        //On GCW Zero, ABXY will all proceed, none of this silly pause-with-B thing:
+#ifdef GCWZERO
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_A, b) || config_tst_d(CONFIG_JOYSTICK_BUTTON_B, b) ||
+            config_tst_d(CONFIG_JOYSTICK_BUTTON_X, b) || config_tst_d(CONFIG_JOYSTICK_BUTTON_Y, b)) 
+#else
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_A, b))
+#endif //GCWZERO
         {
             if (hole_next())
                 goto_state(&st_next);
             else
                 goto_state(&st_score);
         }
+#ifdef GCWZERO
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_START, b)) 
+#else
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_B, b) ||
             config_tst_d(CONFIG_JOYSTICK_BUTTON_START, b))
+#endif //GCWZERO
             return goto_pause(&st_over);
     }
     return 1;
@@ -1312,15 +1356,24 @@ static int fall_buttn(int b, int d)
 {
     if (d)
     {
+        //senquack - on GCW Zero, ABXY all proceed, no silly pause-with-B business:
+#ifdef GCWZERO
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_A, b) || config_tst_d(CONFIG_JOYSTICK_BUTTON_B, b) ||
+            config_tst_d(CONFIG_JOYSTICK_BUTTON_X, b) || config_tst_d(CONFIG_JOYSTICK_BUTTON_Y, b)) 
+#else
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_A, b))
+#endif //GCWZERO
         {
             if (hole_next())
                 goto_state(&st_next);
             else
                 goto_state(&st_score);
         }
+        //senquack - On GCW Zero, Button B should do nothing, it's annoying and confusing otherwise
+#ifndef GCWZERO
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_B, b))
             return goto_pause(&st_over);
+#endif //GCWZERO
     }
     return 1;
 }
@@ -1369,15 +1422,22 @@ static int score_buttn(int b, int d)
 {
     if (d)
     {
+#ifdef GCWZERO
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_A, b) || config_tst_d(CONFIG_JOYSTICK_BUTTON_B, b) ||
+            config_tst_d(CONFIG_JOYSTICK_BUTTON_X, b) || config_tst_d(CONFIG_JOYSTICK_BUTTON_Y, b)) 
+#else
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_A, b))
+#endif //GCWZERO
         {
             if (hole_move())
                 goto_state(&st_next);
             else
                 goto_state(&st_score);
         }
+#ifndef GCWZERO
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_B, b))
             return goto_pause(&st_over);
+#endif //GCWZERO
     }
     return 1;
 }
@@ -1419,6 +1479,12 @@ static int over_buttn(int b, int d)
             return goto_state(&st_title);
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_B, b))
             return goto_state(&st_title);
+        //senquack - added X & Y to do the same on GCW Zero:
+#ifdef GCWZERO
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_X, b) || config_tst_d(CONFIG_JOYSTICK_BUTTON_Y, b))
+            return goto_state(&st_title);
+#endif //GCWZERO
+
     }
     return 1;
 }
