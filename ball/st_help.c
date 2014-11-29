@@ -213,7 +213,7 @@ static int page_controls(int id)
 #ifdef GCWZERO
         if ((kd = gui_harray(jd)))
         {
-            gui_label(kd, "Exit / Pause",   GUI_SML, gui_wht, gui_wht);
+            gui_label(kd, "In-game menu",   GUI_SML, gui_wht, gui_wht);
             gui_label(kd, "Start button", GUI_SML, gui_yel, gui_yel);
         }
 
