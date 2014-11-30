@@ -33,11 +33,16 @@
 #include "st_level.h"
 #include "st_shared.h"
 
-// senquack - added hotkey to toggle new 'finesse' mode:
+// senquack - added hotkey that is held to turn g-sensor on/off,
+//              used w/ L-Trigger to enable finesse mode,
+//              used w/ R-Trigger to change camera mode
 #ifdef GCWZERO
-int ticks_when_finesse_hotkey_pressed = 0;   // holds number of ticks elapsed since select pressed, to enable finesse mode
-const int ticks_when_finesse_hotkey_activates = 500;    // how many ticks hotkey must be held
-const int finesse_hotkey = GCWZERO_SELECT;
+int ticks_when_hotkey_pressed = 0;   // holds number of ticks elapsed since select pressed
+const int ticks_when_hotkey_activates = 2000;    // how many ticks hotkey must be held to toggle g-sensor
+static const int hotkey_button = GCWZERO_SELECT;
+int r_pressed = 0;   // Tracks if R-trigger is pressed    (camera mode hotkey is this+SELECT)
+int l_pressed = 0;   // Tracks if L-trigger is pressed    (finesse mode hotkey is this+SELECT)
+int hotkey_pressed = 0;  // Tracks when hotkey is pressed (for use in camera and finesse combos)
 #endif //GCWZERO
 
 /*---------------------------------------------------------------------------*/
@@ -344,8 +349,11 @@ static int play_loop_enter(struct state *st, struct state *prev)
     fast_rotate = 0;
 
 #ifdef GCWZERO
-    //senquack - always reset finesse-mode hotkey timer when (re)entering loop:
-    ticks_when_finesse_hotkey_pressed = 0;
+    //senquack - always reset hotkey timer and trigger-trackers when (re)entering loop:
+    ticks_when_hotkey_pressed = 0;
+    l_pressed = 0;
+    r_pressed = 0;
+    hotkey_pressed = 0;
 #endif
 
     if (prev == &st_pause)
@@ -404,12 +412,26 @@ static void play_loop_timer(int id, float dt)
 
     //senquack - SELECT can be pressed and held to allow toggling 'finesse' mode
 #ifdef GCWZERO
-    if (ticks_when_finesse_hotkey_pressed > 0) {
-        if ((SDL_GetTicks() - ticks_when_finesse_hotkey_pressed) > ticks_when_finesse_hotkey_activates) {
+    if (hotkey_pressed) {
+        if (l_pressed) {
+            //Hotkey + L-trigger has been pressed, activate finesse-mode and show indication
             config_set_d(CONFIG_FINESSE_MODE_ENABLED, !config_get_d(CONFIG_FINESSE_MODE_ENABLED));
-            ticks_when_finesse_hotkey_pressed = 0;
-            //debug
-            printf("Finesse mode toggled to: %d\n", config_get_d(CONFIG_FINESSE_MODE_ENABLED));
+            l_pressed = 0;
+            ticks_when_hotkey_pressed = 0;
+            hud_finesse_mode_pulse(config_get_d(CONFIG_FINESSE_MODE_ENABLED));
+        } else if (r_pressed) {
+            //Hotkey + R-trigger has been pressed, switch to next camera mode
+            r_pressed = 0;
+            ticks_when_hotkey_pressed = 0;
+            next_camera();
+        }
+    }
+
+    if (ticks_when_hotkey_pressed > 0) {
+        if ((SDL_GetTicks() - ticks_when_hotkey_pressed) > ticks_when_hotkey_activates) {
+            config_set_d(CONFIG_GSENSOR_ENABLED, !config_get_d(CONFIG_GSENSOR_ENABLED));
+            ticks_when_hotkey_pressed = 0;
+            hud_gsensor_pulse(config_get_d(CONFIG_GSENSOR_ENABLED));
         }
     }
 #endif //GCWZERO
@@ -540,16 +562,31 @@ static int play_loop_buttn(int b, int d)
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_START, b))
             goto_state(&st_pause);
 
+
+        //senquack - handle special hotkey 
+#ifdef GCWZERO
+        if (b == hotkey_button) {
+            hotkey_pressed = 1;
+            ticks_when_hotkey_pressed = SDL_GetTicks();
+        } 
+
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_R1, b)) {
+            r_pressed = 1;
+            if (!hotkey_pressed) {
+                rot_set(DIR_R, 1.0f, 0);
+            }
+        }
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L1, b)) {
+            l_pressed = 1;
+            if (!hotkey_pressed) {
+                rot_set(DIR_L, 1.0f, 0);
+            }
+        }
+#else
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_R1, b))
             rot_set(DIR_R, 1.0f, 0);
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L1, b))
             rot_set(DIR_L, 1.0f, 0);
-
-        //senquack - handle Finesse-mode hotkey (must be held for certain time)
-#ifdef GCWZERO
-        if (b == finesse_hotkey) {
-           ticks_when_finesse_hotkey_pressed = SDL_GetTicks();
-        } 
 #endif //GCWZERO
 
 #ifndef GCWZERO
@@ -561,10 +598,24 @@ static int play_loop_buttn(int b, int d)
     }
     else
     {
+        //senquack - handle special hotkey 
+#ifdef GCWZERO
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_R1, b)) {
+            r_pressed = 0;
+            rot_clr(DIR_R);
+        }
+
+        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L1, b)) {
+            l_pressed = 0;
+            rot_clr(DIR_L);
+        }
+#else
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_R1, b))
             rot_clr(DIR_R);
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L1, b))
             rot_clr(DIR_L);
+#endif //GCWZERO
+
 //senquack - modified to make button Y the fast rotate button:
 #ifdef GCWZERO
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_Y, b)) {
@@ -575,6 +626,14 @@ static int play_loop_buttn(int b, int d)
             fast_rotate = 0;
 #endif //GCWZERO
 
+        //senquack - handle hoykey:
+#ifdef GCWZERO
+        if (b == hotkey_button) {
+            hotkey_pressed = 0;
+            ticks_when_hotkey_pressed = 0;
+        } 
+#endif
+        
     }
     return 1;
 }

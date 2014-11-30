@@ -40,6 +40,15 @@ static int goal_id;
 static int cam_id;
 static int fps_id;
 
+#ifdef GCWZERO
+//senquack - added visual indication of gsensor toggling:
+static int gsensor_id;
+static float gsensor_timer;
+//added visual indication of finesse mode toggling:
+static int finesse_mode_id;
+static float finesse_mode_timer;
+#endif
+
 static int speed_id;
 static int speed_ids[SPEED_MAX];
 
@@ -117,6 +126,21 @@ void hud_init(void)
         gui_layout(fps_id, -1, 1);
     }
 
+#ifdef GCWZERO
+    //senquack - added visual indication of gsensor toggling:
+    if ((gsensor_id = gui_label(0, "G-Sensor is OFF  (Hold SELECT 2 sec to toggle)", GUI_SML, gui_wht, gui_wht))) {
+        gui_set_rect(gsensor_id, GUI_ALL);
+        gui_layout(gsensor_id, 0, 0);
+    }
+    
+    //senquack - added visual indication of finesse mode toggling:
+    if ((finesse_mode_id = gui_label(0, "Finesse mode is OFF", GUI_SML, gui_wht, gui_wht))) {
+        gui_set_rect(finesse_mode_id, GUI_ALL);
+        gui_layout(finesse_mode_id, 0, 0);
+    }
+
+#endif //GCWZERO
+
     if ((speed_id = gui_varray(0)))
     {
         int i;
@@ -139,6 +163,12 @@ void hud_free(void)
     gui_delete(cam_id);
     gui_delete(fps_id);
 
+    //senquack
+#ifdef GCWZERO
+    gui_delete(gsensor_id);
+    gui_delete(finesse_mode_id);
+#endif
+
     gui_delete(speed_id);
 
     for (i = SPEED_NONE + 1; i < SPEED_MAX; i++)
@@ -158,6 +188,12 @@ void hud_paint(void)
 
     hud_cam_paint();
     hud_speed_paint();
+
+    //senquack
+#ifdef GCWZERO
+    hud_gsensor_paint();
+    hud_finesse_mode_paint();
+#endif
 }
 
 void hud_update(int pulse)
@@ -267,7 +303,69 @@ void hud_timer(float dt)
 
     hud_cam_timer(dt);
     hud_speed_timer(dt);
+
+    //senquack
+#ifdef GCWZERO
+    hud_gsensor_timer(dt);
+    hud_finesse_mode_timer(dt);
+#endif
 }
+
+/*---------------------------------------------------------------------------*/
+//senquack - added visual indication when g-sensor hotkey activates
+#ifdef GCWZERO
+void hud_gsensor_pulse(int status)
+{
+    if (status) {
+        gui_set_label(gsensor_id, "G-Sensor is ON  (Hold SELECT 2 sec to toggle)");
+    } else {
+        gui_set_label(gsensor_id, "G-Sensor is OFF  (Hold SELECT 2 sec to toggle)");
+    }
+    gui_pulse(gsensor_id, 1.2f);
+    gsensor_timer = 2.0f;
+}
+
+void hud_gsensor_timer(float dt)
+{
+    gsensor_timer -= dt;
+    gui_timer(gsensor_id, dt);
+}
+
+void hud_gsensor_paint(void)
+{
+    if (gsensor_timer > 0.0f) {
+        gui_paint(gsensor_id);
+    }
+}
+#endif
+
+/*---------------------------------------------------------------------------*/
+//senquack - added visual indication when finesse mode activates
+#ifdef GCWZERO
+void hud_finesse_mode_pulse(int status)
+{
+    if (status) {
+        gui_set_label(finesse_mode_id, "Finesse Mode is ON");
+    } else {
+        gui_set_label(finesse_mode_id, "Finesse Mode is OFF");
+    }
+    gui_pulse(finesse_mode_id, 1.2f);
+    finesse_mode_timer = 2.0f;
+}
+
+void hud_finesse_mode_timer(float dt)
+{
+    finesse_mode_timer -= dt;
+    gui_timer(finesse_mode_id, dt);
+}
+
+void hud_finesse_mode_paint(void)
+{
+    if (finesse_mode_timer > 0.0f) {
+        gui_paint(finesse_mode_id);
+    }
+}
+#endif
 
 /*---------------------------------------------------------------------------*/
 

@@ -43,15 +43,19 @@
 #include "st_pause.h"
 
 
+//senquack:
 #ifdef GCWZERO
-//senquack - for new code in make_dirs_and_migrate():
+//For new code in make_dirs_and_migrate():
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
 
-//senquack - for new code in gsensor.c
+//For new code in gsensor.c
 #include "gsensor.h"
+
+//For visual indication of gsensor toggling:
+#include "hud.h"
 
 // This is also defined within the Makefile, but placed here to doubly-ensure symlink() is correctly declared:
 #define POSIX_C_SOURCE 200112L
@@ -68,6 +72,10 @@ static int a_pressed = 0;     // Following four used to assist with G-sensor ena
 static int b_pressed = 0;      
 static int x_pressed = 0;
 static int y_pressed = 0;
+extern int ticks_when_hotkey_pressed;     // Defined in st_play.c
+extern int hotkey_pressed; //Defined in st_play.c
+extern int l_pressed;   // Defined in st_play.c
+extern int r_pressed;   // Defined in st_play.c
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -143,7 +151,6 @@ static int handle_key_dn(SDL_Event *e)
         break;
 
     default:
-        //senquack -- DEBUG - disabling this allows main menu usage only with analog:
         if (config_tst_d(CONFIG_KEY_FORWARD, c))
             st_stick(config_get_d(CONFIG_JOYSTICK_AXIS_Y0), -1.0f);
         else if (config_tst_d(CONFIG_KEY_BACKWARD, c))
@@ -201,7 +208,6 @@ static int loop(void)
     int in_actual_game;
     //senquack - holds value of new configuration option finesse-scale for 'finesse-mode'
     float finesse_scale;
-    extern int ticks_when_finesse_hotkey_pressed; //defined in st_play.c, allows for timed hotkey for finesse mode
 #endif
     /* Process SDL events. */
 
@@ -550,16 +556,6 @@ static int loop(void)
                } else {
                   d = st_buttn(e.jbutton.button, 1);
                }
-
-               // Check if A+B+X+Y g-sensor toggle hotkey is pressed:
-               if (a_pressed && b_pressed && x_pressed && y_pressed) {
-                  if (config_get_d(CONFIG_GSENSOR_HOTKEY_ENABLED)) {
-                     a_pressed = b_pressed = x_pressed = y_pressed = 0;
-                     // Toggle g-sensor on/off:
-                     config_set_d(CONFIG_GSENSOR_ENABLED, !config_get_d(CONFIG_GSENSOR_ENABLED));   
-                     //TODO: show visual indicator
-                  }
-               }
             } else {
                d = st_buttn(e.jbutton.button, 1);
             }
@@ -581,7 +577,12 @@ static int loop(void)
                a_pressed = 0;
             } else if (e.jbutton.button == GCWZERO_SELECT) {
                // Always reset select-hotkey timer even when out of the actual game
-               ticks_when_finesse_hotkey_pressed = 0;
+               ticks_when_hotkey_pressed = 0;
+               hotkey_pressed = 0;
+            } else if (e.jbutton.button == GCWZERO_L) {
+               l_pressed = 0;
+            } else if (e.jbutton.button == GCWZERO_R) {
+               r_pressed = 0;
             }
             
             if (curr_state() == &st_play_loop) {
