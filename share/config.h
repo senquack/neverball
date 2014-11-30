@@ -115,11 +115,14 @@ extern int CONFIG_GSENSOR_CENTERY;
 extern int CONFIG_GSENSOR_SENSITIVITY;
 extern int CONFIG_GSENSOR_DEADZONE;
 extern int CONFIG_GSENSOR_NONLINEAR;
+extern int CONFIG_GSENSOR_HOTKEY_ENABLED;  // Enable pressing A/B/X/Y all at once to enable/disable g-sensor in-game
 extern int CONFIG_ANALOG_ENABLED;
 extern int CONFIG_ANALOG_SENSITIVITY;
 extern int CONFIG_ANALOG_DEADZONE;
 extern int CONFIG_SCREEN_TILT_ENABLED;
 extern int CONFIG_FINESSE_SCALE;           // percentage 0-100% to scale input values of dpad/analog when in 'finesse mode'
+extern int CONFIG_FINESSE_MODE_ENABLED;
+extern int CONFIG_FINESSE_MODE_INDICATOR;
 #endif //GCWZERO
 
 /* String options. */
@@ -174,14 +177,14 @@ int config_screenshot(void);
 
 //senquack - GCW Zero button defines:
 #ifdef GCWZERO
-#define GCWZERO_A       1
 #define GCWZERO_B       0
-#define GCWZERO_X       3
+#define GCWZERO_A       1
 #define GCWZERO_Y       2
-#define GCWZERO_L       6
-#define GCWZERO_R       7
+#define GCWZERO_X       3
 #define GCWZERO_SELECT  4
 #define GCWZERO_START   5
+#define GCWZERO_L       6
+#define GCWZERO_R       7
 #endif //GCWZERO
 
 #endif

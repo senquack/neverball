@@ -33,6 +33,13 @@
 #include "st_level.h"
 #include "st_shared.h"
 
+// senquack - added hotkey to toggle new 'finesse' mode:
+#ifdef GCWZERO
+int ticks_when_finesse_hotkey_pressed = 0;   // holds number of ticks elapsed since select pressed, to enable finesse mode
+const int ticks_when_finesse_hotkey_activates = 500;    // how many ticks hotkey must be held
+const int finesse_hotkey = GCWZERO_SELECT;
+#endif //GCWZERO
+
 /*---------------------------------------------------------------------------*/
 
 static void set_camera(int c)
@@ -336,6 +343,11 @@ static int play_loop_enter(struct state *st, struct state *prev)
     rot_init();
     fast_rotate = 0;
 
+#ifdef GCWZERO
+    //senquack - always reset finesse-mode hotkey timer when (re)entering loop:
+    ticks_when_finesse_hotkey_pressed = 0;
+#endif
+
     if (prev == &st_pause)
         return 0;
 
@@ -389,6 +401,18 @@ static void play_loop_timer(int id, float dt)
         game_set_cam(config_get_d(CONFIG_CAMERA));
         break;
     }
+
+    //senquack - SELECT can be pressed and held to allow toggling 'finesse' mode
+#ifdef GCWZERO
+    if (ticks_when_finesse_hotkey_pressed > 0) {
+        if ((SDL_GetTicks() - ticks_when_finesse_hotkey_pressed) > ticks_when_finesse_hotkey_activates) {
+            config_set_d(CONFIG_FINESSE_MODE_ENABLED, !config_get_d(CONFIG_FINESSE_MODE_ENABLED));
+            ticks_when_finesse_hotkey_pressed = 0;
+            //debug
+            printf("Finesse mode toggled to: %d\n", config_get_d(CONFIG_FINESSE_MODE_ENABLED));
+        }
+    }
+#endif //GCWZERO
 
     game_step_fade(dt);
 
@@ -520,12 +544,15 @@ static int play_loop_buttn(int b, int d)
             rot_set(DIR_R, 1.0f, 0);
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L1, b))
             rot_set(DIR_L, 1.0f, 0);
-//senquack - modified to make button Y the fast rotate button:
+
+        //senquack - handle Finesse-mode hotkey (must be held for certain time)
 #ifdef GCWZERO
-        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_Y, b)) {
-            fast_rotate = 1;
-        }
-#else
+        if (b == finesse_hotkey) {
+           ticks_when_finesse_hotkey_pressed = SDL_GetTicks();
+        } 
+#endif //GCWZERO
+
+#ifndef GCWZERO
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L2, b))
             fast_rotate = 1;
 #endif //GCWZERO
@@ -547,6 +574,7 @@ static int play_loop_buttn(int b, int d)
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L2, b))
             fast_rotate = 0;
 #endif //GCWZERO
+
     }
     return 1;
 }

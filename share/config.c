@@ -118,10 +118,14 @@ int CONFIG_GSENSOR_CENTERY;
 int CONFIG_GSENSOR_SENSITIVITY;
 int CONFIG_GSENSOR_DEADZONE;
 int CONFIG_GSENSOR_NONLINEAR;
+int CONFIG_GSENSOR_HOTKEY_ENABLED;  // Enable pressing A/B/X/Y all at once to enable/disable g-sensor in-game
 int CONFIG_ANALOG_ENABLED;
 int CONFIG_ANALOG_SENSITIVITY;
 int CONFIG_ANALOG_DEADZONE;
 int CONFIG_SCREEN_TILT_ENABLED;
+int CONFIG_FINESSE_SCALE;           // percentage 0-100% to scale input values of dpad/analog when in 'finesse mode'
+int CONFIG_FINESSE_MODE_ENABLED;
+int CONFIG_FINESSE_MODE_INDICATOR;  // show a permanent indicator on the screen whenever finesse mode is enabled
 #endif //GCWZERO
 
 /* String options. */
@@ -281,6 +285,7 @@ static struct
     { &CONFIG_GSENSOR_ENABLED, "gsensor_enabled", 0 },
     { &CONFIG_GSENSOR_CENTERX, "gsensor_centerx", 0 },
     { &CONFIG_GSENSOR_CENTERY, "gsensor_centery", 12500 },
+    { &CONFIG_GSENSOR_HOTKEY_ENABLED, "gsensor_hotkey_enabled", 1 },
     { &CONFIG_GSENSOR_SENSITIVITY,  "gsensor_sensitivity", 5 },
     { &CONFIG_GSENSOR_DEADZONE,     "gsensor_deadzone", 3 },
     { &CONFIG_GSENSOR_NONLINEAR,    "gsensor_nonlinear", 0 },
@@ -288,6 +293,9 @@ static struct
     { &CONFIG_ANALOG_SENSITIVITY,   "analog_sensitivity", 1 },
     { &CONFIG_ANALOG_DEADZONE, "analog_deadzone", 0 }, 
     { &CONFIG_SCREEN_TILT_ENABLED, "screen_tilt_enabled", 1},
+    { &CONFIG_FINESSE_SCALE, "finesse_scale", 50 },     // Scale DPAD/analog inputs 50% by default in finesse mode
+    { &CONFIG_FINESSE_MODE_ENABLED, "finesse_mode_enabled", 0 },
+    { &CONFIG_FINESSE_MODE_INDICATOR, "finesse_mode_indicator", 1 },
 #endif //GCWZERO
 };
 
