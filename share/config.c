@@ -222,8 +222,8 @@ static struct
     { &CONFIG_JOYSTICK_BUTTON_X,      "joystick_button_x",      3 },
     { &CONFIG_JOYSTICK_BUTTON_Y,      "joystick_button_y",      2 },
     //Note: mapping both L1/L2 to same button (same for R1/R2) allows faster camera movement
-    { &CONFIG_JOYSTICK_BUTTON_L1,     "joystick_button_l1",     7 },
-    { &CONFIG_JOYSTICK_BUTTON_R1,     "joystick_button_r1",     6 },
+    { &CONFIG_JOYSTICK_BUTTON_L1,     "joystick_button_l1",     6 },
+    { &CONFIG_JOYSTICK_BUTTON_R1,     "joystick_button_r1",     7 },
     { &CONFIG_JOYSTICK_BUTTON_L2,     "joystick_button_l2",     -1 },
     { &CONFIG_JOYSTICK_BUTTON_R2,     "joystick_button_r2",     -1 },
     { &CONFIG_JOYSTICK_BUTTON_START,  "joystick_button_start",  5 },
