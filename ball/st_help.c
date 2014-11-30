@@ -116,7 +116,7 @@ static int page_rules(int id)
 #ifdef GCWZERO
     const char *s0 = _(
         "Use the DPAD, Analog Stick,\\"
-        "or enable the G-Sensor to\\"
+        "A/B/X/Y buttons, or G-Sensor to\\"
         "tilt the floor causing the\\"
         "ball to roll.\\");
 #else
@@ -225,14 +225,26 @@ static int page_controls(int id)
 
         if ((kd = gui_harray(jd)))
         {
-            gui_label(kd, "Modify camera rotation speed",   GUI_SML, gui_wht, gui_wht);
-            gui_label(kd, "Y button", GUI_SML, gui_yel, gui_yel);
+            gui_label(kd, "Change camera mode",   GUI_SML, gui_wht, gui_wht);
+            gui_label(kd, "Select + R trigger", GUI_SML, gui_yel, gui_yel);
         }
 
         if ((kd = gui_harray(jd)))
         {
-            gui_label(kd, "Change camera mode",   GUI_SML, gui_wht, gui_wht);
-            gui_label(kd, "X button", GUI_SML, gui_yel, gui_yel);
+            gui_label(kd, "Toggle 'finesse mode'",   GUI_SML, gui_wht, gui_wht);
+            gui_label(kd, "Select + L trigger", GUI_SML, gui_yel, gui_yel);
+        }
+
+        if ((kd = gui_harray(jd)))
+        {
+            gui_label(kd, "Toggle G-Sensor On/Off",   GUI_SML, gui_wht, gui_wht);
+            gui_label(kd, "Hold Select for 2 seconds", GUI_SML, gui_yel, gui_yel);
+        }
+
+        if ((kd = gui_harray(jd)))
+        {
+            gui_label(kd, "A/B/X/Y",   GUI_SML, gui_wht, gui_wht);
+            gui_label(kd, "Tilt (ignoring finesse mode)", GUI_SML, gui_yel, gui_yel);
         }
 
         gui_set_rect(jd, GUI_ALL);
