@@ -123,6 +123,7 @@ extern int CONFIG_SCREEN_TILT_ENABLED;
 extern int CONFIG_FINESSE_SCALE;           // percentage 0-100% to scale input values of dpad/analog when in 'finesse mode'
 extern int CONFIG_FINESSE_MODE_ENABLED;
 extern int CONFIG_FINESSE_MODE_INDICATOR;
+extern int CONFIG_REVERSED_CAMERA_ROTATION;
 #endif //GCWZERO
 
 /* String options. */

@@ -126,6 +126,7 @@ int CONFIG_SCREEN_TILT_ENABLED;
 int CONFIG_FINESSE_SCALE;           // percentage 0-100% to scale input values of dpad/analog when in 'finesse mode'
 int CONFIG_FINESSE_MODE_ENABLED;
 int CONFIG_FINESSE_MODE_INDICATOR;  // show a permanent indicator on the screen whenever finesse mode is enabled
+int CONFIG_REVERSED_CAMERA_ROTATION; // camera controls are non-intuitive in default neverball; allow changing
 #endif //GCWZERO
 
 /* String options. */
@@ -296,6 +297,7 @@ static struct
     { &CONFIG_FINESSE_SCALE, "finesse_scale", 50 },     // Scale DPAD/analog inputs 50% by default in finesse mode
     { &CONFIG_FINESSE_MODE_ENABLED, "finesse_mode_enabled", 0 },
     { &CONFIG_FINESSE_MODE_INDICATOR, "finesse_mode_indicator", 1 },
+    { &CONFIG_REVERSED_CAMERA_ROTATION, "reversed_camera_rotation", 0 },
 #endif //GCWZERO
 };
 

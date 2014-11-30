@@ -573,13 +573,23 @@ static int play_loop_buttn(int b, int d)
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_R1, b)) {
             r_pressed = 1;
             if (!hotkey_pressed) {
-                rot_set(DIR_R, 1.0f, 0);
+                if (config_get_d(CONFIG_REVERSED_CAMERA_ROTATION)) {
+                    // Original behavior (non-intuitive)
+                    rot_set(DIR_R, 1.0f, 0);
+                } else {
+                    rot_set(DIR_L, 1.0f, 0);
+                }
             }
         }
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L1, b)) {
             l_pressed = 1;
             if (!hotkey_pressed) {
-                rot_set(DIR_L, 1.0f, 0);
+                if (config_get_d(CONFIG_REVERSED_CAMERA_ROTATION)) {
+                    // Original behavior (non-intuitive)
+                    rot_set(DIR_L, 1.0f, 0);
+                } else {
+                    rot_set(DIR_R, 1.0f, 0);
+                }
             }
         }
 #else
