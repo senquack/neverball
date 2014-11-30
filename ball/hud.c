@@ -44,9 +44,11 @@ static int fps_id;
 //senquack - added visual indication of gsensor toggling:
 static int gsensor_id;
 static float gsensor_timer;
-//added visual indication of finesse mode toggling:
+//added visual indication of finesse mode toggling (for center of screen):
 static int finesse_mode_id;
 static float finesse_mode_timer;
+//added optional visual indication of finesse mode (for top of screen):
+static int finesse_mode_top_id;
 #endif
 
 static int speed_id;
@@ -135,10 +137,16 @@ void hud_init(void)
     
     //senquack - added visual indication of finesse mode toggling:
     if ((finesse_mode_id = gui_label(0, "Finesse mode is OFF", GUI_SML, gui_wht, gui_wht))) {
-        gui_set_rect(finesse_mode_id, GUI_ALL);
-        gui_layout(finesse_mode_id, 0, 0);
+        gui_set_rect(finesse_mode_id, GUI_BOT);
+        gui_layout(finesse_mode_id, 0, 1);
     }
 
+    //senquack - added visual indication of finesse mode toggling:
+    if ((finesse_mode_top_id = gui_label(0, "Finesse mode", GUI_SML, gui_wht, gui_wht))) {
+        gui_set_label(finesse_mode_top_id, "Finesse mode");
+        gui_set_rect(finesse_mode_top_id, GUI_BOT);
+        gui_layout(finesse_mode_top_id, 0, 1);
+    }
 #endif //GCWZERO
 
     if ((speed_id = gui_varray(0)))
@@ -167,6 +175,7 @@ void hud_free(void)
 #ifdef GCWZERO
     gui_delete(gsensor_id);
     gui_delete(finesse_mode_id);
+    gui_delete(finesse_mode_top_id);
 #endif
 
     gui_delete(speed_id);
@@ -193,6 +202,7 @@ void hud_paint(void)
 #ifdef GCWZERO
     hud_gsensor_paint();
     hud_finesse_mode_paint();
+    hud_finesse_mode_top_paint();
 #endif
 }
 
@@ -362,7 +372,18 @@ void hud_finesse_mode_timer(float dt)
 void hud_finesse_mode_paint(void)
 {
     if (finesse_mode_timer > 0.0f) {
-        gui_paint(finesse_mode_id);
+        // If user doesn't want the top-of-screen indicator when finesse mode is on, paint a temporary one:
+        if (!config_get_d(CONFIG_FINESSE_MODE_INDICATOR)) {
+            gui_paint(finesse_mode_id);
+        }
+    }
+}
+
+// This is an optional indicator on top of screen whenever finesse mode is enabled:
+void hud_finesse_mode_top_paint(void)
+{
+    if (config_get_d(CONFIG_FINESSE_MODE_INDICATOR) && config_get_d(CONFIG_FINESSE_MODE_ENABLED)) {
+        gui_paint(finesse_mode_top_id);
     }
 }
 #endif

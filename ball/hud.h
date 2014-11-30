@@ -23,6 +23,8 @@ void hud_gsensor_paint(void);
 void hud_finesse_mode_pulse(int);
 void hud_finesse_mode_timer(float);
 void hud_finesse_mode_paint(void);
+
+void hud_finesse_mode_top_paint(void);
 #endif //GCWZERO
 
 void hud_speed_pulse(int);
