@@ -45,10 +45,12 @@ ifeq ($(DEBUG),1)
 	CPPFLAGS :=
 else
 #senquack - added the posix define to fix implicit declaration of symlink() errors:
-	CFLAGS      := -O2 -mno-shared -D_POSIX_C_SOURCE=200112L
-	CXXFLAGS    := -O2 -mno-shared -D_POSIX_C_SOURCE=200112L
-#	CFLAGS      := -O2 -mno-shared -flto -D_POSIX_C_SOURCE=200112L
-#	CXXFLAGS    := -O2 -mno-shared -flto -D_POSIX_C_SOURCE=200112L
+#	CFLAGS      := -O2 -mno-shared -D_POSIX_C_SOURCE=200112L 
+#	CXXFLAGS    := -O2 -mno-shared -D_POSIX_C_SOURCE=200112L
+#	CFLAGS      := -O2 -mno-shared -D_POSIX_C_SOURCE=200112L -flto -fprofile-generate
+#	CXXFLAGS    := -O2 -mno-shared -D_POSIX_C_SOURCE=200112L -flto -fprofile-generate
+	CFLAGS      := -O2 -mno-shared -flto -D_POSIX_C_SOURCE=200112L 
+	CXXFLAGS    := -O2 -mno-shared -flto -D_POSIX_C_SOURCE=200112L 
 	CPPFLAGS := -DNDEBUG
 endif
 
@@ -313,6 +315,7 @@ BALL_OBJS := \
 	ball/st_pause.o     \
 	ball/st_ball.o      \
 	ball/st_controls.o  \
+	ball/st_camera.o    \
 	ball/gsensor.o      \
 	ball/main.o
 PUTT_OBJS := \
