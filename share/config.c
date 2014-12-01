@@ -296,7 +296,7 @@ static struct
     { &CONFIG_ANALOG_SENSITIVITY,   "analog_sensitivity", 1 },
     { &CONFIG_ANALOG_DEADZONE, "analog_deadzone", 0 }, 
     { &CONFIG_SCREEN_TILT_ENABLED, "screen_tilt_enabled", 1},
-    { &CONFIG_FINESSE_SCALE, "finesse_scale", 50 },     // Scale DPAD/analog inputs 50% by default in finesse mode
+    { &CONFIG_FINESSE_SCALE, "finesse_scale", 3 },     // Scale DPAD/analog inputs in finesse mode
     { &CONFIG_FINESSE_MODE_ENABLED, "finesse_mode_enabled", 0 },
     { &CONFIG_FINESSE_MODE_INDICATOR, "finesse_mode_indicator", 1 },
     { &CONFIG_REVERSED_CAMERA_ROTATION, "reversed_camera_rotation", 0 },

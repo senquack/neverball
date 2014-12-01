@@ -36,6 +36,7 @@
 //senquack - new configuration options for GCW Zero:
 #ifdef GCWZERO
 #include "st_controls.h"
+#include "st_camera.h"
 #endif //GCWZERO
 
 extern const char TITLE[];
@@ -48,6 +49,7 @@ enum
    //senquack - on GCW Zero, removed video language controls, added controls screen and fps and cheat options:
 #ifdef GCWZERO
     CONF_CONTROLS = GUI_LAST,
+    CONF_CAMERA,
     CONF_VIDEO,
     CONF_CHEAT,
     CONF_FPS,
@@ -103,10 +105,14 @@ static int conf_action(int tok, int val)
         goto_state(&st_title);
         break;
 
-   //senquack - disabled Video configuration screen on GCW Zero, added controls configuration screen, cheat option:
+   //senquack - disabled Video configuration screen on GCW Zero, added new  configuration screens, cheat option:
 #ifdef GCWZERO
     case CONF_CONTROLS:
         goto_state(&st_controls);
+        break;
+
+    case CONF_CAMERA:
+        goto_state(&st_camera);
         break;
 
     case CONF_CHEAT:
@@ -187,9 +193,10 @@ static int conf_gui(void)
 
         conf_header(id, _("Options"), GUI_BACK);
 
-   //senquack - disabled Video configuration screen on GCW Zero, added controls configuration screen:
+   //senquack - disabled Video configuration screen on GCW Zero, added new configuration screens:
 #ifdef GCWZERO
         conf_state(id, _("Controls"), _("Configure"), CONF_CONTROLS);
+        conf_state(id, _("Camera"), _("Configure"), CONF_CAMERA);
 #else
         conf_state(id, _("Graphics"), _("Configure"), CONF_VIDEO);
 #endif //GCWZERO

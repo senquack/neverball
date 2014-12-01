@@ -76,6 +76,10 @@ extern int ticks_when_hotkey_pressed;     // Defined in st_play.c
 extern int hotkey_pressed; //Defined in st_play.c
 extern int l_pressed;   // Defined in st_play.c
 extern int r_pressed;   // Defined in st_play.c
+
+// CONFIG_FINESSE_SCALE is a number 0-10, we will convert that to a number between
+//    0-0.70 and add 0.05 to get final scale factor between 0.05 - 0.75
+#define CONV_FINESSE_SCALE_FACTOR (0.05f + ((float)config_get_d(CONFIG_FINESSE_SCALE) * .07f))
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -330,7 +334,7 @@ static int loop(void)
                      float gsensor_fval;
 
                      if (abs(gsensor_val) < gsensor_deadzone) {
-                        gsensor_fval = 0;
+                        gsensor_fval = 0.0f;
                      } else {
                         gsensor_fval = (float)gsensor_val;
                         gsensor_fval /= (float)gsensor_effective_max;   // Convert to number between -1.0 and 1.0
@@ -347,7 +351,10 @@ static int loop(void)
                         }
 
                         if (config_get_d(CONFIG_FINESSE_MODE_ENABLED)) {
-                           gsensor_fval *= (float)config_get_d(CONFIG_FINESSE_SCALE) / 100.0f;
+//                           gsensor_fval *= (float)config_get_d(CONFIG_FINESSE_SCALE) / 100.0f;
+                           // CONFIG_FINESSE_SCALE is a number 0-10, we will convert that to a number between
+                           //    0.0-0.85 and add .05 to get final scale factor between 0.05 - 0.9
+                           gsensor_fval *= CONV_FINESSE_SCALE_FACTOR;
                         }
 
                      }
@@ -384,7 +391,8 @@ static int loop(void)
                         }
 
                         if (config_get_d(CONFIG_FINESSE_MODE_ENABLED)) {
-                           analog_fval *= (float)config_get_d(CONFIG_FINESSE_SCALE) / 100.0f;
+//                           analog_fval *= (float)config_get_d(CONFIG_FINESSE_SCALE) / 100.0f;
+                           analog_fval *= CONV_FINESSE_SCALE_FACTOR;
                         }
                      }
                      st_stick(e.jaxis.axis, analog_fval);
@@ -402,7 +410,10 @@ static int loop(void)
             in_actual_game = curr_state() == &st_play_loop;
 
             if (config_get_d(CONFIG_FINESSE_MODE_ENABLED)) {
-               finesse_scale = (float)config_get_d(CONFIG_FINESSE_SCALE) / 100.0f;
+//               finesse_scale = (float)config_get_d(CONFIG_FINESSE_SCALE) / 100.0f;
+               // CONFIG_FINESSE_SCALE is a number 0-10, we will convert that to a number between
+               //    0.0-0.75 and add .15 to get final scale factor between 0.15 - 0.9
+               finesse_scale = CONV_FINESSE_SCALE_FACTOR;
             } else {
                finesse_scale = 1.0f;
             }
