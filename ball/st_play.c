@@ -608,16 +608,26 @@ static int play_loop_buttn(int b, int d)
     }
     else
     {
-        //senquack - handle special hotkey 
+        //senquack - handle special hotkey, handle new option for reversed rotation
 #ifdef GCWZERO
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_R1, b)) {
             r_pressed = 0;
-            rot_clr(DIR_R);
+            if (config_get_d(CONFIG_REVERSED_CAMERA_ROTATION)) {
+                // Original behavior (non-intuitive)
+                rot_clr(DIR_R);
+            } else {
+                rot_clr(DIR_L);
+            }
         }
 
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L1, b)) {
             l_pressed = 0;
-            rot_clr(DIR_L);
+            if (config_get_d(CONFIG_REVERSED_CAMERA_ROTATION)) {
+                // Original behavior (non-intuitive)
+                rot_clr(DIR_L);
+            } else {
+                rot_clr(DIR_R);
+            }
         }
 #else
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_R1, b))

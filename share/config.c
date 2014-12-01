@@ -127,6 +127,8 @@ int CONFIG_FINESSE_SCALE;           // percentage 0-100% to scale input values o
 int CONFIG_FINESSE_MODE_ENABLED;
 int CONFIG_FINESSE_MODE_INDICATOR;  // show a permanent indicator on the screen whenever finesse mode is enabled
 int CONFIG_REVERSED_CAMERA_ROTATION; // camera controls are non-intuitive in default neverball; allow changing
+int CONFIG_ROTATE_NORMAL;             // Speed of camera rotation in normal (non-finesse) mode
+int CONFIG_ROTATE_FINESSE;            // Speed of camera rotation in finesse mode
 #endif //GCWZERO
 
 /* String options. */
@@ -298,6 +300,8 @@ static struct
     { &CONFIG_FINESSE_MODE_ENABLED, "finesse_mode_enabled", 0 },
     { &CONFIG_FINESSE_MODE_INDICATOR, "finesse_mode_indicator", 1 },
     { &CONFIG_REVERSED_CAMERA_ROTATION, "reversed_camera_rotation", 0 },
+    { &CONFIG_ROTATE_NORMAL,            "normal_camera_rotation_speed", 250 },
+    { &CONFIG_ROTATE_FINESSE,           "finesse_camera_rotation_speed", 100 },
 #endif //GCWZERO
 };
 
