@@ -68,18 +68,42 @@ const char ICON[] = "icon/neverball.png";
 #ifdef GCWZERO
 extern struct state st_play_loop; //added so I know whether to submit gsensor inputs to the game (defined in st_play.c)
 static int joy_dev_idx = 0;         //SDL device index of the gcw controls (so we can filter inputs)
-static int a_pressed = 0;     // Following four used to assist with G-sensor enabled/disable hotkey & A/B/X/Y movement
-static int b_pressed = 0;      
-static int x_pressed = 0;
-static int y_pressed = 0;
 extern int ticks_when_hotkey_pressed;     // Defined in st_play.c
 extern int hotkey_pressed; //Defined in st_play.c
 extern int l_pressed;   // Defined in st_play.c
 extern int r_pressed;   // Defined in st_play.c
 
+static int a_pressed = 0;     // Following four used to assist with G-sensor enabled/disable hotkey & A/B/X/Y movement
+static int b_pressed = 0;      
+static int x_pressed = 0;
+static int y_pressed = 0;
+static int up_pressed = 0;
+static int down_pressed = 0;
+static int left_pressed = 0;
+static int right_pressed = 0;
+static int analog_x = 0;
+static int analog_y = 0;
+static int gsensor_x = 0;
+static int gsensor_y = 0;
+static float finesse_scale = 1.0f;
+int finesse_mode = 0;       // Can be set in st_play.c when toggled in-game
+static int analog_enabled = 1;
+static int analog_deadzone = 0;
+static int analog_effective_max = 32767;
+static int analog_nonlinear = 0;
+int gsensor_enabled = 0;    // Can be set in st_play.c when toggled in-game
+static int gsensor_centerx = 0;
+static int gsensor_centery = 0;
+static int gsensor_deadzone = 1000;
+static const int gsensor_max = 26000;	// Just barely under the maximum reading in any direction from the gsensor
+                                             //   under normal use (outside of shaking or jerking the unit)
+static int gsensor_effective_max = 26000;
+static int gsensor_nonlinear = 0;
+static int in_actual_game = 0;
+
 // CONFIG_FINESSE_SCALE is a number 0-10, we will convert that to a number between
-//    0-0.70 and add 0.05 to get final scale factor between 0.05 - 0.75
-#define CONV_FINESSE_SCALE_FACTOR (0.05f + ((float)config_get_d(CONFIG_FINESSE_SCALE) * .07f))
+//    0-0.725 and add 0.025 to get final scale factor between 0.025 - 0.75
+#define CONV_FINESSE_SCALE_FACTOR (0.025f + ((float)config_get_d(CONFIG_FINESSE_SCALE) * .0725f))
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -199,6 +223,194 @@ static int handle_key_up(SDL_Event *e)
     return d;
 }
 
+//senquack - helper functions for our rather-complicated 4-way-input scheme for movement control:
+#ifdef GCWZERO
+
+/* Convert a raw analog stick axis position to a number between -1.0 and 1.0 */
+static inline float conv_analog_val(int val)
+{
+    float fval;
+    if (abs(val) < analog_deadzone) {
+        fval = 0.0f;
+    } else {
+        fval = (float)val;
+        fval /= (float)analog_effective_max;  // Convert to value between -1.0 and 1.0
+
+        if (fval > 1.0f) {
+            fval = 1.0f;
+        } else if (fval < -1.0f) {
+            fval = -1.0f;
+        }
+
+        // Is non-linear sensitivity requested?
+        if (analog_nonlinear) {
+            fval = fval * fval * fval;
+        }
+    }
+    return fval;
+}
+
+/* Convert a raw g-sensor axis position to a number between -1.0 and 1.0 */
+static float conv_gsensor_val(int axis, int val)
+{
+    float fval;
+
+    if (axis == 0) {
+        val -= gsensor_centerx;
+        if (val < -gsensor_effective_max) {
+            val = -gsensor_effective_max;
+        } else if (val > gsensor_effective_max) {
+            val = gsensor_effective_max;
+        }
+    } else {
+        val -= gsensor_centery;
+        if (val < -gsensor_effective_max) {
+            val = -gsensor_effective_max;
+        } else if (val > gsensor_effective_max) {
+            val = gsensor_effective_max;
+        }
+    }
+
+    if (abs(val) < gsensor_deadzone) {
+        fval = 0.0f;
+    } else {
+        fval = (float)val;
+        fval /= (float)gsensor_effective_max;   // Convert to number between -1.0 and 1.0
+
+        if (fval > 1.0f) {
+            fval = 1.0f;
+        } else if (fval < -1.0f) {
+            fval = -1.0f;
+        }
+
+        // Is non-linear sensitivity requested?
+        if (gsensor_nonlinear) {
+            fval = fval * fval * fval;
+        }
+    }
+    return fval;
+}
+
+static void submit_stick_vals()
+{
+    in_actual_game = curr_state() == &st_play_loop;
+
+    if (!in_actual_game) {
+
+        // If not in the actual game, just update based on DPAD values and return:
+        if (up_pressed) {
+            st_stick(1, -1.0f);
+        } else if (down_pressed) {
+            st_stick(1, 1.0f);
+        } else {
+            st_stick(1, 0.0f);
+        }
+
+        if (left_pressed) {
+            st_stick(0, -1.0f);
+        } else if (right_pressed) {
+            st_stick(0, 1.0f);
+        } else {
+            st_stick(0, 0.0f);
+        }
+
+        return;
+    } else {
+        float xval = 0.0f, yval = 0.0f;   // What will ultimately be submitted to st_stick
+        float scale = finesse_mode ? finesse_scale : 1.0f;
+
+        // In the actual game, first handle X-axis:
+        if (x_pressed) {
+            xval = -1.0f;
+        } else if (a_pressed) {
+            xval = 1.0f;
+        } else if (left_pressed) {
+            xval = -scale;
+        } else if (right_pressed) {
+            xval = scale;
+        } else {
+
+            if (analog_enabled) {
+                xval = conv_analog_val(analog_x);
+            }
+
+            if (gsensor_enabled && xval == 0.0f) {
+                // No other x-inputs, so go ahead and use gsensor for x-input
+                xval = conv_gsensor_val(0, gsensor_x);
+            }
+
+            xval *= scale;
+        }
+
+        // Then, handle the Y-axis:
+        if (y_pressed) {
+            yval = -1.0f;
+        } else if (b_pressed) {
+            yval = 1.0f;
+        } else if (up_pressed) {
+            yval = -scale;
+        } else if (down_pressed) {
+            yval = scale;
+        } else {
+
+            if (analog_enabled) {
+                yval = conv_analog_val(analog_y);
+            }
+
+            if (gsensor_enabled && yval == 0.0f) {
+                // No other x-inputs, so go ahead and use gsensor for x-input
+                yval = conv_gsensor_val(1, gsensor_y);
+            }
+
+            yval *= scale;
+        }
+
+        st_stick(0, xval);
+        st_stick(1, yval);
+    }
+}
+
+void reset_stick_vals(void)
+{
+    in_actual_game = curr_state() == &st_play_loop;
+    a_pressed = 0;     
+    b_pressed = 0;      
+    x_pressed = 0;
+    y_pressed = 0;
+    up_pressed = 0;
+    down_pressed = 0;
+    left_pressed = 0;
+    right_pressed = 0;
+    analog_x = 0;
+    analog_y = 0;
+    gsensor_x = 0;
+    gsensor_y = 0;
+    finesse_scale = CONV_FINESSE_SCALE_FACTOR;
+    finesse_mode = config_get_d(CONFIG_FINESSE_MODE_ENABLED);
+    analog_enabled = config_get_d(CONFIG_ANALOG_ENABLED);
+    analog_deadzone = config_get_d(CONFIG_ANALOG_DEADZONE) * 1000;
+    analog_nonlinear = config_get_d(CONFIG_ANALOG_NONLINEAR);
+    gsensor_enabled = config_get_d(CONFIG_GSENSOR_ENABLED);
+    gsensor_nonlinear = config_get_d(CONFIG_GSENSOR_NONLINEAR);
+    gsensor_centerx = config_get_d(CONFIG_GSENSOR_CENTERX);
+    gsensor_centery = config_get_d(CONFIG_GSENSOR_CENTERY);
+    gsensor_deadzone = config_get_d(CONFIG_GSENSOR_DEADZONE) * 500;
+
+    gsensor_effective_max = gsensor_max - (config_get_d(CONFIG_GSENSOR_SENSITIVITY) * 1000);
+    if (abs(gsensor_centerx) > abs(gsensor_centery)) {
+        gsensor_effective_max -= abs(gsensor_centerx);
+    } else {
+        gsensor_effective_max -= abs(gsensor_centery);
+    }
+
+    if (config_get_d(CONFIG_ANALOG_SENSITIVITY) > 1) {
+        analog_effective_max = 32767 - (config_get_d(CONFIG_ANALOG_SENSITIVITY-1) * 2000);
+    } else {
+        analog_effective_max = 32767;
+    }
+}
+#endif //GCWZERO
+
 static int loop(void)
 {
     SDL_Event e;
@@ -206,13 +418,6 @@ static int loop(void)
 
     int ax, ay, dx, dy;
 
-#ifdef GCWZERO
-    float val;
-    //senquack - added this to determine if we're in the actual game or not:
-    int in_actual_game;
-    //senquack - holds value of new configuration option finesse-scale for 'finesse-mode'
-    float finesse_scale;
-#endif
     /* Process SDL events. */
 
     while (d && SDL_PollEvent(&e))
@@ -296,279 +501,94 @@ static int loop(void)
 
         case SDL_JOYAXISMOTION:
 #ifdef GCWZERO
-            //senquack - added gsensor & analog stick support:
-            // A/B/X/Y button movement override all other inputs:
-            if (!(((y_pressed || b_pressed) && e.jaxis.axis == 1) || 
-                     ((x_pressed || a_pressed) && e.jaxis.axis == 0))) {
-               if (e.jaxis.which == gsensor_dev_idx) {
-                  if (config_get_d(CONFIG_GSENSOR_ENABLED) && joy_gsensor && curr_state() == &st_play_loop ) {
-                     // This is a gsensor input
-                     int gsensor_centerx = config_get_d(CONFIG_GSENSOR_CENTERX);
-                     int gsensor_centery = config_get_d(CONFIG_GSENSOR_CENTERY);
-                     int gsensor_deadzone = config_get_d(CONFIG_GSENSOR_DEADZONE) * 500;
-                     int gsensor_effective_max = gsensor_max - (config_get_d(CONFIG_GSENSOR_SENSITIVITY) * 1000);
-                     int gsensor_val = e.jaxis.value;
-
-                     if (abs(gsensor_centerx) > abs(gsensor_centery)) {
-                        gsensor_effective_max -= abs(gsensor_centerx);
-                     } else {
-                        gsensor_effective_max -= abs(gsensor_centery);
-                     }
-
-                     if (e.jaxis.axis == 0) {
-                        gsensor_val -= gsensor_centerx;
-                        if (gsensor_val < -gsensor_effective_max) {
-                           gsensor_val = -gsensor_effective_max;
-                        } else if (gsensor_val > gsensor_effective_max) {
-                           gsensor_val = gsensor_effective_max;
-                        }
-                     } else {
-                        gsensor_val -= gsensor_centery;
-                        if (gsensor_val < -gsensor_effective_max) {
-                           gsensor_val = -gsensor_effective_max;
-                        } else if (gsensor_val > gsensor_effective_max) {
-                           gsensor_val = gsensor_effective_max;
-                        }
-                     }
-
-                     float gsensor_fval;
-
-                     if (abs(gsensor_val) < gsensor_deadzone) {
-                        gsensor_fval = 0.0f;
-                     } else {
-                        gsensor_fval = (float)gsensor_val;
-                        gsensor_fval /= (float)gsensor_effective_max;   // Convert to number between -1.0 and 1.0
-
-                        if (gsensor_fval > 1.0) {
-                           gsensor_fval = 1.0;
-                        } else if (gsensor_fval < -1.0) {
-                           gsensor_fval = -1.0;
-                        }
-
-                        // Is non-linear sensitivity requested?
-                        if (config_get_d(CONFIG_GSENSOR_NONLINEAR)) {
-                           gsensor_fval = gsensor_fval * gsensor_fval * gsensor_fval;
-                        }
-
-                        if (config_get_d(CONFIG_FINESSE_MODE_ENABLED)) {
-//                           gsensor_fval *= (float)config_get_d(CONFIG_FINESSE_SCALE) / 100.0f;
-                           // CONFIG_FINESSE_SCALE is a number 0-10, we will convert that to a number between
-                           //    0.0-0.85 and add .05 to get final scale factor between 0.05 - 0.9
-                           gsensor_fval *= CONV_FINESSE_SCALE_FACTOR;
-                        }
-
-                     }
-                     st_stick(e.jaxis.axis, gsensor_fval);
-                  }
-               } else {
-                  // This is an input from the GCW analog stick:
-                  int analog_val = e.jaxis.value;
-                  // Only accept inputs if we're in the actual game and the input is more than the deadzone:
-                  if (config_get_d(CONFIG_ANALOG_ENABLED) && curr_state() == &st_play_loop) {
-                     int analog_sensitivity = config_get_d(CONFIG_ANALOG_SENSITIVITY);
-                     int analog_effective_max;
-                     if (analog_sensitivity > 1) {
-                        analog_effective_max = 32767 - ((analog_sensitivity-1) * 2000);
-                     } else {
-                        analog_effective_max = 32767;
-                     }
-
-                     int analog_deadzone = config_get_d(CONFIG_ANALOG_DEADZONE) * 1000;
-                     float analog_fval;
-                     if (abs(analog_val) < analog_deadzone) {
-                        analog_fval = 0;
-                     } else {
-                        analog_fval = (float)analog_val;
-                        analog_fval /= (float)analog_effective_max;  // Convert to value between -1.0 and 1.0
-                        if (analog_fval > 1.0) {
-                           analog_fval = 1.0;
-                        } else if (analog_fval < -1.0) {
-                           analog_fval = -1.0;
-                        }
-                        if (analog_sensitivity < 1) {
-                           // if sensitivity is set very low, use non-linear sensitivity:
-                           analog_fval = analog_fval * analog_fval * analog_fval;
-                        }
-
-                        if (config_get_d(CONFIG_FINESSE_MODE_ENABLED)) {
-//                           analog_fval *= (float)config_get_d(CONFIG_FINESSE_SCALE) / 100.0f;
-                           analog_fval *= CONV_FINESSE_SCALE_FACTOR;
-                        }
-                     }
-                     st_stick(e.jaxis.axis, analog_fval);
-                  }
-               }
+            if (e.jaxis.which == gsensor_dev_idx) {
+                if (e.jaxis.axis == 0) {
+                    gsensor_x = e.jaxis.value;
+                } else {
+                    gsensor_y = e.jaxis.value;
+                }
+            } else {
+                if (e.jaxis.axis == 0) {
+                    analog_x = e.jaxis.value;
+                } else {
+                    analog_y = e.jaxis.value;
+                }
             }
-#else
-            st_stick(e.jaxis.axis, JOY_VALUE(e.jaxis.value));
-#endif //GCWZERO
+
+            submit_stick_vals();
+#endif
             break;
 
          //senquack - DPAD on GCWZERO is a HAT so we need to add support for those events:
 #ifdef GCWZERO
         case SDL_JOYHATMOTION:
-            in_actual_game = curr_state() == &st_play_loop;
-
-            if (config_get_d(CONFIG_FINESSE_MODE_ENABLED)) {
-//               finesse_scale = (float)config_get_d(CONFIG_FINESSE_SCALE) / 100.0f;
-               // CONFIG_FINESSE_SCALE is a number 0-10, we will convert that to a number between
-               //    0.0-0.75 and add .15 to get final scale factor between 0.15 - 0.9
-               finesse_scale = CONV_FINESSE_SCALE_FACTOR;
-            } else {
-               finesse_scale = 1.0f;
-            }
-
             switch (e.jhat.value) {
-               case SDL_HAT_UP:
-                  if (in_actual_game) {
-                     if (!(y_pressed || b_pressed)) {    // Y/B override any other Y-axis input in-game in all modes
-                        val = -1.0f;
-                        st_stick(1, val * finesse_scale);
-                     }
-                  } else {
-                     st_stick(1, -1.0f);
-                  }
-                  break;
-               case SDL_HAT_DOWN:
-                  if (in_actual_game) {
-                     if (!(y_pressed || b_pressed)) {    // Y/B override any other Y-axis input in-game in all modes
-                        val = 1.0f;
-                        st_stick(1, val * finesse_scale);
-                     }
-                  } else {
-                     st_stick(1, 1.0f);
-                  }
-                  break;
-               case SDL_HAT_LEFT:
-                  if (in_actual_game) {
-                     if (!(x_pressed || a_pressed)) {    // X/A override any other X-axis input in finesse mode
-                        val = -1.0f;
-                        st_stick(0, val * finesse_scale);
-                     }
-                  } else {
-                     st_stick(0, -1.0f);
-                  }
-                  break;
-               case SDL_HAT_RIGHT:
-                  if (in_actual_game) {
-                     if (!(x_pressed || a_pressed)) {    // X/A override any other X-axis input in finesse mode
-                        val = 1.0f;
-                        st_stick(0, val * finesse_scale);
-                     }
-                  } else {
-                     st_stick(0, 1.0f);
-                  }
-                  break;
-               case SDL_HAT_LEFTUP:
-                  if (in_actual_game) {
-                     //First, handle the X-axis:
-                     if (!(x_pressed || a_pressed)) {    // X/A override any other X-axis input in finesse mode
-                        val = -1.0f;
-                        st_stick(0, val * finesse_scale);
-                     }
-                     //Then, handle the Y-axis:
-                     if (!(y_pressed || b_pressed)) {    // Y/B override any other Y-axis input in-game in all modes
-                        val = -1.0f;
-                        st_stick(1, val * finesse_scale);
-                     }
-                  } else {
-                     st_stick(0, -1.0f);
-                     st_stick(1, -1.0f);
-                  }
-                  break;
-               case SDL_HAT_RIGHTUP:
-                  if (in_actual_game) {
-                     //First, handle the X-axis:
-                     if (!(x_pressed || a_pressed)) {    // X/A override any other X-axis input in finesse mode
-                        val = 1.0f;
-                        st_stick(0, val * finesse_scale);
-                     }
-                     //Then, handle the Y-axis:
-                     if (!(y_pressed || b_pressed)) {    // Y/B override any other Y-axis input in-game in all modes
-                        val = -1.0f;
-                        st_stick(1, val * finesse_scale);
-                     }
-                  } else {
-                     st_stick(0, 1.0f);
-                     st_stick(1, -1.0f);
-                  }
-                  break;
-               case SDL_HAT_LEFTDOWN:
-                  if (in_actual_game) {
-                     //First, handle the X-axis:
-                     if (!(x_pressed || a_pressed)) {    // X/A override any other X-axis input in finesse mode
-                        val = -1.0f;
-                        st_stick(0, val * finesse_scale);
-                     }
-                     //Then, handle the Y-axis:
-                     if (!(y_pressed || b_pressed)) {    // Y/B override any other Y-axis input in-game in all modes
-                        val = 1.0f;
-                        st_stick(1, val * finesse_scale);
-                     }
-                  } else {
-                     st_stick(0, -1.0f);
-                     st_stick(1, 1.0f);
-                  }
-                  break;
-               case SDL_HAT_RIGHTDOWN:
-                  if (in_actual_game) {
-                     //First, handle the X-axis:
-                     if (!(x_pressed || a_pressed)) {    // X/A override any other X-axis input in finesse mode
-                        val = 1.0f;
-                        st_stick(0, val * finesse_scale);
-                     }
-                     //Then, handle the Y-axis:
-                     if (!(y_pressed || b_pressed)) {    // Y/B override any other Y-axis input in-game in all modes
-                        val = 1.0f;
-                        st_stick(1, val * finesse_scale);
-                     }
-                  } else {
-                     st_stick(0, 1.0f);
-                     st_stick(1, 1.0f);
-                  }
-                  break;
-               case SDL_HAT_CENTERED:
-                  if (in_actual_game) {
-                     //First, handle the X-axis:
-                     if (!(x_pressed || a_pressed)) {    // X/A override any other X-axis input in finesse mode
-                        st_stick(0, 0.0f);
-                     }
-                     //Then, handle the Y-axis:
-                     if (!(y_pressed || b_pressed)) {    // Y/B override any other Y-axis input in-game in all modes
-                        st_stick(1, 0.0f);
-                     }
-                  } else {
-                     st_stick(0, 0.0f);
-                     st_stick(1, 0.0f);
-                  }
-                  break;
-               default:
-                  break;
+                case SDL_HAT_UP:
+                    up_pressed = 1;
+                    down_pressed = left_pressed = right_pressed = 0;
+                    break;
+                case SDL_HAT_DOWN:
+                    down_pressed = 1;
+                    up_pressed = left_pressed = right_pressed = 0;
+                    break;
+                case SDL_HAT_LEFT:
+                    left_pressed = 1;
+                    up_pressed = down_pressed = right_pressed = 0;
+                    break;
+                case SDL_HAT_RIGHT:
+                    right_pressed = 1;
+                    up_pressed = down_pressed = left_pressed = 0;
+                    break;
+                case SDL_HAT_LEFTUP:
+                    left_pressed = 1;
+                    up_pressed = 1;
+                    down_pressed = right_pressed = 0;
+                    break;
+                case SDL_HAT_RIGHTUP:
+                    right_pressed = 1;
+                    up_pressed = 1;
+                    down_pressed = left_pressed = 0;
+                    break;
+                case SDL_HAT_LEFTDOWN:
+                    left_pressed = 1;
+                    down_pressed = 1;
+                    up_pressed = right_pressed = 0;
+                    break;
+                case SDL_HAT_RIGHTDOWN:
+                    right_pressed = 1;
+                    down_pressed = 1;
+                    up_pressed = left_pressed = 0;
+                    break;
+                case SDL_HAT_CENTERED:
+                    up_pressed = down_pressed = left_pressed = right_pressed = 0;
+                    break;
+                default:
+                    break;
             }
+            submit_stick_vals();
             break;
 #endif //GCWZERO
         case SDL_JOYBUTTONDOWN:
 #ifdef GCWZERO
             if (curr_state() == &st_play_loop) {
-
-               // In-Game, A/B/X/Y buttons always act as Up/Down/Left/Right and override all other inputs
-               if (e.jbutton.button == GCWZERO_B) {           // is B pressed? (down)
-                  b_pressed = 1;              
-                  st_stick(1, 1.0f);
-               } else if (e.jbutton.button == GCWZERO_Y) {    // is Y pressed? (up)
-                  y_pressed= 1;
-                  st_stick(1, -1.0f);
-               } else if (e.jbutton.button == GCWZERO_X) {    // is X pressed? (left)
-                  x_pressed = 1;
-                  st_stick(0, -1.0f);
-               } else if (e.jbutton.button == GCWZERO_A) {    // is A pressed? (right)
-                  a_pressed = 1;
-                  st_stick(0, 1.0f);
-               } else {
-                  d = st_buttn(e.jbutton.button, 1);
-               }
+                // In-Game, A/B/X/Y buttons always act as Up/Down/Left/Right
+                if (e.jbutton.button == GCWZERO_B) {           // is B pressed? (down)
+                    b_pressed = 1;              
+                    submit_stick_vals();
+                } else if (e.jbutton.button == GCWZERO_Y) {    // is Y pressed? (up)
+                    y_pressed = 1;
+                    submit_stick_vals();
+                } else if (e.jbutton.button == GCWZERO_X) {    // is X pressed? (left)
+                    x_pressed = 1;
+                    submit_stick_vals();
+                } else if (e.jbutton.button == GCWZERO_A) {    // is A pressed? (right)
+                    a_pressed = 1;
+                    submit_stick_vals();
+                } else {
+                    d = st_buttn(e.jbutton.button, 1);
+                }
             } else {
-               d = st_buttn(e.jbutton.button, 1);
+                d = st_buttn(e.jbutton.button, 1);
             }
 #else
             d = st_buttn(e.jbutton.button, 1);
@@ -579,98 +599,97 @@ static int loop(void)
 #ifdef GCWZERO
             // Always reset the tracker variables when A/B/X/Y buttons come up, even if not in-game:
             if (e.jbutton.button == GCWZERO_Y) {
-               y_pressed = 0;
+                y_pressed = 0;
             } else if (e.jbutton.button == GCWZERO_B) {
-               b_pressed = 0;
+                b_pressed = 0;
             } else if (e.jbutton.button == GCWZERO_X) {
-               x_pressed = 0;
+                x_pressed = 0;
             } else if (e.jbutton.button == GCWZERO_A) {
-               a_pressed = 0;
+                a_pressed = 0;
             } else if (e.jbutton.button == GCWZERO_SELECT) {
-               // Always reset select-hotkey timer even when out of the actual game
-               ticks_when_hotkey_pressed = 0;
-               hotkey_pressed = 0;
+                // Always reset select-hotkey timer even when out of the actual game
+                ticks_when_hotkey_pressed = 0;
+                hotkey_pressed = 0;
             } else if (e.jbutton.button == GCWZERO_L) {
-               l_pressed = 0;
+                l_pressed = 0;
             } else if (e.jbutton.button == GCWZERO_R) {
-               r_pressed = 0;
+                r_pressed = 0;
             }
-            
+
             if (curr_state() == &st_play_loop) {
-               // In-game, A/B/X/Y buttons always act as Up/Down/Left/Right and override all other inputs
-               if (e.jbutton.button == GCWZERO_Y || e.jbutton.button == GCWZERO_B) {           // is B/Y unpressed? (down/up)
-                  st_stick(1, 0.0f);
-               } else if (e.jbutton.button == GCWZERO_X || e.jbutton.button == GCWZERO_A) {    // is X/A unpressed? (left/right)
-                  st_stick(0, 0.0f);
-               } else {
-                  d = st_buttn(e.jbutton.button, 0);
-               }
+                // In-game, A/B/X/Y buttons always act as Up/Down/Left/Right
+                if (e.jbutton.button == GCWZERO_Y || e.jbutton.button == GCWZERO_B ||
+                        e.jbutton.button == GCWZERO_X || e.jbutton.button == GCWZERO_A) {
+                    submit_stick_vals();
+                } else {
+                    d = st_buttn(e.jbutton.button, 0);
+                }
             } else {
-               d = st_buttn(e.jbutton.button, 0);
+                d = st_buttn(e.jbutton.button, 0);
             }
 #else
             d = st_buttn(e.jbutton.button, 0);
 #endif
             break;
 
-        case SDL_MOUSEWHEEL:
+            case SDL_MOUSEWHEEL:
             st_wheel(e.wheel.x, e.wheel.y);
             break;
         }
-    }
-
-    /* Process events via the tilt sensor API. */
-//senquack - not used on GCW zero:
-#ifndef GCWZERO
-    if (tilt_stat())
-    {
-        int b;
-        int s;
-
-        st_angle(tilt_get_x(),
-                 tilt_get_z());
-
-        while (tilt_get_button(&b, &s))
-        {
-            const int X = config_get_d(CONFIG_JOYSTICK_AXIS_X0);
-            const int Y = config_get_d(CONFIG_JOYSTICK_AXIS_Y0);
-            const int L = config_get_d(CONFIG_JOYSTICK_DPAD_L);
-            const int R = config_get_d(CONFIG_JOYSTICK_DPAD_R);
-            const int U = config_get_d(CONFIG_JOYSTICK_DPAD_U);
-            const int D = config_get_d(CONFIG_JOYSTICK_DPAD_D);
-
-            if (b == L || b == R || b == U || b == D)
-            {
-                static int pad[4] = { 0, 0, 0, 0 };
-
-                /* Track the state of the D-pad buttons. */
-
-                if      (b == L) pad[0] = s;
-                else if (b == R) pad[1] = s;
-                else if (b == U) pad[2] = s;
-                else if (b == D) pad[3] = s;
-
-                /* Convert D-pad button events into joystick axis motion. */
-
-                if      (pad[0] && !pad[1]) st_stick(X, -1.0f);
-                else if (pad[1] && !pad[0]) st_stick(X, +1.0f);
-                else                        st_stick(X,  0.0f);
-
-                if      (pad[2] && !pad[3]) st_stick(Y, -1.0f);
-                else if (pad[3] && !pad[2]) st_stick(Y, +1.0f);
-                else                        st_stick(Y,  0.0f);
-            }
-            else d = st_buttn(b, s);
         }
-    }
+
+        /* Process events via the tilt sensor API. */
+        //senquack - not used on GCW zero:
+#ifndef GCWZERO
+        if (tilt_stat())
+        {
+            int b;
+            int s;
+
+            st_angle(tilt_get_x(),
+                    tilt_get_z());
+
+                while (tilt_get_button(&b, &s))
+                {
+                    const int X = config_get_d(CONFIG_JOYSTICK_AXIS_X0);
+                    const int Y = config_get_d(CONFIG_JOYSTICK_AXIS_Y0);
+                    const int L = config_get_d(CONFIG_JOYSTICK_DPAD_L);
+                    const int R = config_get_d(CONFIG_JOYSTICK_DPAD_R);
+                    const int U = config_get_d(CONFIG_JOYSTICK_DPAD_U);
+                    const int D = config_get_d(CONFIG_JOYSTICK_DPAD_D);
+
+                    if (b == L || b == R || b == U || b == D)
+                    {
+                        static int pad[4] = { 0, 0, 0, 0 };
+
+                        /* Track the state of the D-pad buttons. */
+
+                        if      (b == L) pad[0] = s;
+                        else if (b == R) pad[1] = s;
+                        else if (b == U) pad[2] = s;
+                        else if (b == D) pad[3] = s;
+
+                        /* Convert D-pad button events into joystick axis motion. */
+
+                        if      (pad[0] && !pad[1]) st_stick(X, -1.0f);
+                        else if (pad[1] && !pad[0]) st_stick(X, +1.0f);
+                        else                        st_stick(X,  0.0f);
+
+                        if      (pad[2] && !pad[3]) st_stick(Y, -1.0f);
+                        else if (pad[3] && !pad[2]) st_stick(Y, +1.0f);
+                        else                        st_stick(Y,  0.0f);
+                    }
+                    else d = st_buttn(b, s);
+                }
+            }
 #endif //GCWZERO
 
-    return d;
-}
+            return d;
+        }
 
-/*---------------------------------------------------------------------------*/
+        /*---------------------------------------------------------------------------*/
 
-static char *opt_data;
+        static char *opt_data;
 static char *opt_replay;
 static char *opt_level;
 

@@ -4,8 +4,6 @@
 
 SDL_Joystick *joy_gsensor = NULL;
 int gsensor_dev_idx = -1;    //SDL device index of the gsensor so we can filter SDL JOYAXIS events
-const int gsensor_max = 26000;	// Just barely under the maximum reading in any direction from the gsensor
-                                             //   under normal use (outside of shaking or jerking the unit)
 
 void recalibrate_gsensor(int *x, int *y)
 {

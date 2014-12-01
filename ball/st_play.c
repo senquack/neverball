@@ -43,6 +43,10 @@ static const int hotkey_button = GCWZERO_SELECT;
 int r_pressed = 0;   // Tracks if R-trigger is pressed    (camera mode hotkey is this+SELECT)
 int l_pressed = 0;   // Tracks if L-trigger is pressed    (finesse mode hotkey is this+SELECT)
 int hotkey_pressed = 0;  // Tracks when hotkey is pressed (for use in camera and finesse combos)
+extern int gsensor_enabled;     // defined in main.c
+extern int finesse_mode;        // defined in main.c
+void reset_stick_vals(void);  // Defined in main.c, this assists with our rather-complicated input scheme
+                                //   allowing A/B/X/Y to override other movement inputs in-game
 #endif //GCWZERO
 
 /*---------------------------------------------------------------------------*/
@@ -354,6 +358,8 @@ static int play_loop_enter(struct state *st, struct state *prev)
     l_pressed = 0;
     r_pressed = 0;
     hotkey_pressed = 0;
+    //senquack - reset remembered stick inputs (for in-game A/B/X/Y movement overriding and co-existing w/ other inputs)
+    reset_stick_vals();
 #endif
 
     if (prev == &st_pause)
@@ -418,7 +424,8 @@ static void play_loop_timer(int id, float dt)
             config_set_d(CONFIG_FINESSE_MODE_ENABLED, !config_get_d(CONFIG_FINESSE_MODE_ENABLED));
             l_pressed = 0;
             ticks_when_hotkey_pressed = 0;
-            hud_finesse_mode_pulse(config_get_d(CONFIG_FINESSE_MODE_ENABLED));
+            finesse_mode = config_get_d(CONFIG_FINESSE_MODE_ENABLED);
+            hud_finesse_mode_pulse(finesse_mode);
         } else if (r_pressed) {
             //Hotkey + R-trigger has been pressed, switch to next camera mode
             r_pressed = 0;
@@ -431,7 +438,8 @@ static void play_loop_timer(int id, float dt)
         if ((SDL_GetTicks() - ticks_when_hotkey_pressed) > ticks_when_hotkey_activates) {
             config_set_d(CONFIG_GSENSOR_ENABLED, !config_get_d(CONFIG_GSENSOR_ENABLED));
             ticks_when_hotkey_pressed = 0;
-            hud_gsensor_pulse(config_get_d(CONFIG_GSENSOR_ENABLED));
+            gsensor_enabled = config_get_d(CONFIG_GSENSOR_ENABLED);
+            hud_gsensor_pulse(gsensor_enabled);
         }
     }
 #endif //GCWZERO

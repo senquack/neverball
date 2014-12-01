@@ -119,6 +119,7 @@ extern int CONFIG_GSENSOR_HOTKEY_ENABLED;  // Enable pressing A/B/X/Y all at onc
 extern int CONFIG_ANALOG_ENABLED;
 extern int CONFIG_ANALOG_SENSITIVITY;
 extern int CONFIG_ANALOG_DEADZONE;
+extern int CONFIG_ANALOG_NONLINEAR;
 extern int CONFIG_SCREEN_TILT_ENABLED;
 extern int CONFIG_FINESSE_SCALE;           // percentage 0-100% to scale input values of dpad/analog when in 'finesse mode'
 extern int CONFIG_FINESSE_MODE_ENABLED;
