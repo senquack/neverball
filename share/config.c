@@ -122,7 +122,6 @@ int CONFIG_GSENSOR_HOTKEY_ENABLED;  // Enable pressing A/B/X/Y all at once to en
 int CONFIG_ANALOG_ENABLED;
 int CONFIG_ANALOG_SENSITIVITY;
 int CONFIG_ANALOG_DEADZONE;
-int CONFIG_ANALOG_NONLINEAR;
 int CONFIG_SCREEN_TILT_ENABLED;
 int CONFIG_FINESSE_SCALE;           // percentage 0-100% to scale input values of dpad/analog when in 'finesse mode'
 int CONFIG_FINESSE_MODE_ENABLED;
@@ -294,9 +293,8 @@ static struct
     { &CONFIG_GSENSOR_DEADZONE,     "gsensor_deadzone", 3 },
     { &CONFIG_GSENSOR_NONLINEAR,    "gsensor_nonlinear", 1 },
     { &CONFIG_ANALOG_ENABLED,       "analog_enabled", 1 },
-    { &CONFIG_ANALOG_SENSITIVITY,   "analog_sensitivity", 1 },
+    { &CONFIG_ANALOG_SENSITIVITY,   "analog_sensitivity", 5 },
     { &CONFIG_ANALOG_DEADZONE, "analog_deadzone", 0 }, 
-    { &CONFIG_ANALOG_NONLINEAR,    "analog_nonlinear", 0 },
     { &CONFIG_SCREEN_TILT_ENABLED, "screen_tilt_enabled", 1},
     { &CONFIG_FINESSE_SCALE, "finesse_scale", 4 },     // Scale DPAD/analog inputs in finesse mode
     { &CONFIG_FINESSE_MODE_ENABLED, "finesse_mode_enabled", 0 },

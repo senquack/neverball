@@ -90,7 +90,6 @@ int finesse_mode = 0;       // Can be set in st_play.c when toggled in-game
 static int analog_enabled = 1;
 static int analog_deadzone = 0;
 static int analog_effective_max = 32767;
-static int analog_nonlinear = 0;
 int gsensor_enabled = 0;    // Can be set in st_play.c when toggled in-game
 static int gsensor_centerx = 0;
 static int gsensor_centery = 0;
@@ -241,11 +240,6 @@ static inline float conv_analog_val(int val)
         } else if (fval < -1.0f) {
             fval = -1.0f;
         }
-
-        // Is non-linear sensitivity requested?
-        if (analog_nonlinear) {
-            fval = fval * fval * fval;
-        }
     }
     return fval;
 }
@@ -389,7 +383,6 @@ void reset_stick_vals(void)
     finesse_mode = config_get_d(CONFIG_FINESSE_MODE_ENABLED);
     analog_enabled = config_get_d(CONFIG_ANALOG_ENABLED);
     analog_deadzone = config_get_d(CONFIG_ANALOG_DEADZONE) * 1000;
-    analog_nonlinear = config_get_d(CONFIG_ANALOG_NONLINEAR);
     gsensor_enabled = config_get_d(CONFIG_GSENSOR_ENABLED);
     gsensor_nonlinear = config_get_d(CONFIG_GSENSOR_NONLINEAR);
     gsensor_centerx = config_get_d(CONFIG_GSENSOR_CENTERX);
@@ -403,11 +396,11 @@ void reset_stick_vals(void)
         gsensor_effective_max -= abs(gsensor_centery);
     }
 
-    if (config_get_d(CONFIG_ANALOG_SENSITIVITY) > 1) {
-        analog_effective_max = 32767 - (config_get_d(CONFIG_ANALOG_SENSITIVITY-1) * 2000);
-    } else {
-        analog_effective_max = 32767;
-    }
+    //CONFIG_ANALOG_SENSITIVITY:
+    // Anything below 5 results in a stick not being able to reach max speed.
+    // If equal to five, the stick has full range of motion.
+    // If more than five, the stick is very sensitive and reaches max value with less movement.
+    analog_effective_max = 32767 - ((config_get_d(CONFIG_ANALOG_SENSITIVITY) - 5) * 4000);
 }
 #endif //GCWZERO
 
