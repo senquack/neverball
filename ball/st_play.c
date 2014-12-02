@@ -388,15 +388,57 @@ static void play_loop_paint(int id, float t)
 
 static void play_loop_timer(int id, float dt)
 {
+#ifdef GCWZERO
+    static float cur_rot_speed = 0.0f;
+    float max_rot_speed = (float)config_get_d(CONFIG_ROTATE_FAST) / 100.0f;
+//int CONFIG_ROTATE_ACCEL_FINESSE;            // Acceleration of camera rotation in finesse mode
+    float rot_inc = finesse_mode ? config_get_d(CONFIG_ROTATE_ACCEL_FINESSE) + 1 :
+                                    config_get_d(CONFIG_ROTATE_ACCEL_NORMAL) + 1;
+
+    rot_inc /= 40.0f;
+    cur_rot_speed += rot_inc;
+    if (cur_rot_speed > max_rot_speed) {
+        cur_rot_speed = max_rot_speed;
+    }
+
+#else
     float k = (fast_rotate ?
                (float) config_get_d(CONFIG_ROTATE_FAST) / 100.0f :
                (float) config_get_d(CONFIG_ROTATE_SLOW) / 100.0f);
+#endif //GCWZERO
 
-    float r = 0.0f;
 
     gui_timer(id, dt);
     hud_timer(dt);
 
+#ifdef GCWZERO
+    float r = 0.0f;
+    switch (rot_get(&r))
+    {
+    case ROT_HOLD:
+        /*
+         * Cam 3 could be anything. But let's assume it's a manual cam
+         * and holding down both rotation buttons freezes the camera
+         * rotation.
+         */
+        game_set_rot(0.0f);
+        game_set_cam(CAM_3);
+        break;
+
+    case ROT_ROTATE:
+        game_set_rot(r * cur_rot_speed);
+        game_set_cam(config_get_d(CONFIG_CAMERA));
+        break;
+
+    case ROT_NONE:
+        cur_rot_speed = 0.0f;
+        game_set_rot(0.0f);
+//        game_set_rot(r * k);
+        game_set_cam(config_get_d(CONFIG_CAMERA));
+        break;
+    }
+#else
+    float r = 0.0f;
     switch (rot_get(&r))
     {
     case ROT_HOLD:
@@ -415,6 +457,7 @@ static void play_loop_timer(int id, float dt)
         game_set_cam(config_get_d(CONFIG_CAMERA));
         break;
     }
+#endif //GCWZERO
 
     //senquack - SELECT can be pressed and held to allow toggling 'finesse' mode
 #ifdef GCWZERO

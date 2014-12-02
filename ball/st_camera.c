@@ -29,7 +29,6 @@
 
 #define AUD_MENU "snd/menu.ogg"
 
-//senquack - added two options to control camera rotation speeds
 #ifdef GCWZERO
 #define ROT_SPEED_RANGE_MIN  50
 #define ROT_SPEED_RANGE_INC  50
@@ -45,19 +44,20 @@
     (ROT_SPEED_RANGE_MIN + (i * ROT_SPEED_RANGE_INC))
 #endif //GCWZERO
 
-
 /*---------------------------------------------------------------------------*/
 
 enum
 {
-   CAMERA_NORMAL_ROT_SPEED = GUI_LAST,
-   CAMERA_FINESSE_ROT_SPEED,
-   CAMERA_SCREEN_TILT_ENABLED,
-   CAMERA_REVERSED_CAMERA_ROTATION,
+    CAMERA_ROT_SPEED = GUI_LAST,
+    CAMERA_NORMAL_ROT_ACCEL,
+    CAMERA_FINESSE_ROT_ACCEL,
+    CAMERA_SCREEN_TILT_ENABLED,
+    CAMERA_REVERSED_CAMERA_ROTATION,
 };
 
-static int normal_rot_speed_id[11];
-static int finesse_rot_speed_id[11];
+static int rot_speed_id[11];
+static int normal_rot_accel_id[11];
+static int finesse_rot_accel_id[11];
 
 static struct state *camera_back;
 
@@ -65,8 +65,9 @@ static int camera_action(int tok, int val)
 {
     int r = 1;
 
-    int normal_rot_speed = ROT_SPEED_RANGE_MAP(config_get_d(CONFIG_ROTATE_NORMAL));  
-    int finesse_rot_speed = ROT_SPEED_RANGE_MAP(config_get_d(CONFIG_ROTATE_FINESSE));
+    int rot_speed = ROT_SPEED_RANGE_MAP(config_get_d(CONFIG_ROTATE_FAST));  
+    int normal_rot_accel = config_get_d(CONFIG_ROTATE_ACCEL_NORMAL);
+    int finesse_rot_accel = config_get_d(CONFIG_ROTATE_ACCEL_FINESSE);
 
     audio_play(AUD_MENU, 1.0f);
 
@@ -76,16 +77,22 @@ static int camera_action(int tok, int val)
             camera_back = NULL;
             break;
 
-        case CAMERA_NORMAL_ROT_SPEED:
-            config_set_d(CONFIG_ROTATE_NORMAL, ROT_SPEED_RANGE_UNMAP(val));
-            gui_toggle(normal_rot_speed_id[val]);
-            gui_toggle(normal_rot_speed_id[normal_rot_speed]);
+        case CAMERA_ROT_SPEED:
+            config_set_d(CONFIG_ROTATE_FAST, ROT_SPEED_RANGE_UNMAP(val));
+            gui_toggle(rot_speed_id[val]);
+            gui_toggle(rot_speed_id[rot_speed]);
             break;
 
-        case CAMERA_FINESSE_ROT_SPEED:
-            config_set_d(CONFIG_ROTATE_FINESSE, ROT_SPEED_RANGE_UNMAP(val));
-            gui_toggle(finesse_rot_speed_id[val]);
-            gui_toggle(finesse_rot_speed_id[finesse_rot_speed]);
+        case CAMERA_NORMAL_ROT_ACCEL:
+            config_set_d(CONFIG_ROTATE_ACCEL_NORMAL, val);
+            gui_toggle(normal_rot_accel_id[val]);
+            gui_toggle(normal_rot_accel_id[normal_rot_accel]);
+            break;
+
+        case CAMERA_FINESSE_ROT_ACCEL:
+            config_set_d(CONFIG_ROTATE_ACCEL_FINESSE, val);
+            gui_toggle(finesse_rot_accel_id[val]);
+            gui_toggle(finesse_rot_accel_id[finesse_rot_accel]);
             break;
 
         case CAMERA_SCREEN_TILT_ENABLED:
@@ -114,14 +121,18 @@ static int camera_gui(void)
     {
         conf_header(id, _("Camera"), GUI_BACK);
 
-        int normal_rot_speed = ROT_SPEED_RANGE_MAP(config_get_d(CONFIG_ROTATE_NORMAL));
-        int finesse_rot_speed = ROT_SPEED_RANGE_MAP(config_get_d(CONFIG_ROTATE_FINESSE));
+        int rot_speed = ROT_SPEED_RANGE_MAP(config_get_d(CONFIG_ROTATE_FAST));
+        int normal_rot_accel = config_get_d(CONFIG_ROTATE_ACCEL_NORMAL);
+        int finesse_rot_accel = config_get_d(CONFIG_ROTATE_ACCEL_FINESSE);
 
-        conf_slider(id, _("Normal rotation speed"), CAMERA_NORMAL_ROT_SPEED, normal_rot_speed,
-                    normal_rot_speed_id, ARRAYSIZE(normal_rot_speed_id));
+        conf_slider(id, _("Max rotation speed"), CAMERA_ROT_SPEED, rot_speed,
+                    rot_speed_id, ARRAYSIZE(rot_speed_id));
 
-        conf_slider(id, _("Finesse-mode rotation speed"), CAMERA_FINESSE_ROT_SPEED, finesse_rot_speed,
-                    finesse_rot_speed_id, ARRAYSIZE(finesse_rot_speed_id));
+        conf_slider(id, _("Normal rotation accel."), CAMERA_NORMAL_ROT_ACCEL, normal_rot_accel,
+                    normal_rot_accel_id, ARRAYSIZE(normal_rot_accel_id));
+
+        conf_slider(id, _("Finesse-mode rotation accel."), CAMERA_FINESSE_ROT_ACCEL, finesse_rot_accel,
+                    finesse_rot_accel_id, ARRAYSIZE(finesse_rot_accel_id));
 
         gui_space(id);
 

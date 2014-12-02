@@ -125,8 +125,8 @@ extern int CONFIG_FINESSE_SCALE;           // percentage 0-100% to scale input v
 extern int CONFIG_FINESSE_MODE_ENABLED;
 extern int CONFIG_FINESSE_MODE_INDICATOR;
 extern int CONFIG_REVERSED_CAMERA_ROTATION;
-extern int CONFIG_ROTATE_NORMAL;             // Speed of camera rotation in normal (non-finesse) mode
-extern int CONFIG_ROTATE_FINESSE;            // Speed of camera rotation in finesse mode
+extern int CONFIG_ROTATE_ACCEL_NORMAL;             // Acceleration of camera rotation in normal (non-finesse) mode
+extern int CONFIG_ROTATE_ACCEL_FINESSE;            // Acceleration of camera rotation in finesse mode
 #endif //GCWZERO
 
 /* String options. */

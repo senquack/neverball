@@ -128,8 +128,8 @@ int CONFIG_FINESSE_SCALE;           // percentage 0-100% to scale input values o
 int CONFIG_FINESSE_MODE_ENABLED;
 int CONFIG_FINESSE_MODE_INDICATOR;  // show a permanent indicator on the screen whenever finesse mode is enabled
 int CONFIG_REVERSED_CAMERA_ROTATION; // camera controls are non-intuitive in default neverball; allow changing
-int CONFIG_ROTATE_NORMAL;             // Speed of camera rotation in normal (non-finesse) mode
-int CONFIG_ROTATE_FINESSE;            // Speed of camera rotation in finesse mode
+int CONFIG_ROTATE_ACCEL_NORMAL;             // Acceleration of camera rotation in normal (non-finesse) mode
+int CONFIG_ROTATE_ACCEL_FINESSE;            // Acceleration of camera rotation in finesse mode
 #endif //GCWZERO
 
 /* String options. */
@@ -269,8 +269,8 @@ static struct
     //senquack - In Neverball, rotate_slow is the default speed.. On GCW Zero, we will therefore make rotate_slow
     //              be faster than rotate_fast, and both are now configurable in the settings screen.
 #ifdef GCWZERO
-    { &CONFIG_ROTATE_FAST, "rotate_fast", 100 },
-    { &CONFIG_ROTATE_SLOW, "rotate_slow", 350 },
+    { &CONFIG_ROTATE_FAST, "rotate_fast", 350 },    // This is the only option actually used on GCW Zero
+    { &CONFIG_ROTATE_SLOW, "rotate_slow", 100 },
 #else
     { &CONFIG_ROTATE_FAST, "rotate_fast", 300 },
     { &CONFIG_ROTATE_SLOW, "rotate_slow", 150 },
@@ -288,22 +288,22 @@ static struct
 #ifdef GCWZERO
     { &CONFIG_GSENSOR_ENABLED, "gsensor_enabled", 0 },
     { &CONFIG_GSENSOR_CENTERX, "gsensor_centerx", 0 },
-    { &CONFIG_GSENSOR_CENTERY, "gsensor_centery", 12500 },
+    { &CONFIG_GSENSOR_CENTERY, "gsensor_centery", 11000 },
     { &CONFIG_GSENSOR_HOTKEY_ENABLED, "gsensor_hotkey_enabled", 1 },
     { &CONFIG_GSENSOR_SENSITIVITY,  "gsensor_sensitivity", 5 },
     { &CONFIG_GSENSOR_DEADZONE,     "gsensor_deadzone", 3 },
-    { &CONFIG_GSENSOR_NONLINEAR,    "gsensor_nonlinear", 0 },
+    { &CONFIG_GSENSOR_NONLINEAR,    "gsensor_nonlinear", 1 },
     { &CONFIG_ANALOG_ENABLED,       "analog_enabled", 1 },
     { &CONFIG_ANALOG_SENSITIVITY,   "analog_sensitivity", 1 },
     { &CONFIG_ANALOG_DEADZONE, "analog_deadzone", 0 }, 
     { &CONFIG_ANALOG_NONLINEAR,    "analog_nonlinear", 0 },
     { &CONFIG_SCREEN_TILT_ENABLED, "screen_tilt_enabled", 1},
-    { &CONFIG_FINESSE_SCALE, "finesse_scale", 3 },     // Scale DPAD/analog inputs in finesse mode
+    { &CONFIG_FINESSE_SCALE, "finesse_scale", 4 },     // Scale DPAD/analog inputs in finesse mode
     { &CONFIG_FINESSE_MODE_ENABLED, "finesse_mode_enabled", 0 },
     { &CONFIG_FINESSE_MODE_INDICATOR, "finesse_mode_indicator", 1 },
     { &CONFIG_REVERSED_CAMERA_ROTATION, "reversed_camera_rotation", 0 },
-    { &CONFIG_ROTATE_NORMAL,            "normal_camera_rotation_speed", 250 },
-    { &CONFIG_ROTATE_FINESSE,           "finesse_camera_rotation_speed", 100 },
+    { &CONFIG_ROTATE_ACCEL_NORMAL,            "normal_camera_rotation_accel", 6 },
+    { &CONFIG_ROTATE_ACCEL_FINESSE,           "finesse_camera_rotation_accel", 3 },
 #endif //GCWZERO
 };
 
