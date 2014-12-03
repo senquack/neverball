@@ -12,7 +12,7 @@
 "time_hs" "600 1000"
 "coin_hs" "20 15"
 "goal_hs" "2200 5000"
-"message" "Mouse buttons rotate the view.\Press Escape to pause or quit.\\\\Click to begin.\"
+"message" "Trigger buttons rotate the view.\Press Start to pause or quit.\Press Select + L Trigger to toggle\Finesse Mode. Press Select + R Trigger to\change the camera mode.\"
 // brush 0
 {
 ( 0 384 0 ) ( 0 256 0 ) ( 0 256 -16 ) mtrl/invisible 0 0 0 0.5 0.5 0 0 0
