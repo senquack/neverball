@@ -210,10 +210,9 @@ static int conf_gui(void)
 
         gui_space(id);
 
-        conf_state (id, _("Options"), "Reset to Defaults", CONF_LOAD_DEFAULTS);
-
-   //senquack - altered for clarification on GCW Zero
+   //senquack - altered for clarification on GCW Zero, added reset-to-defaults
 #ifdef GCWZERO
+        conf_state (id, _("Options"), "Reset to Defaults", CONF_LOAD_DEFAULTS);
         conf_slider(id, _("USB Mouse Sensitivity"), CONF_MOUSE_SENSE, mouse,
                     mouse_id, ARRAYSIZE(mouse_id));
 #else
