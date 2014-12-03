@@ -223,7 +223,7 @@ static int conf_gui(void)
 
 //senquack - added cheat mode to unlock levels, and FPS option:
 #ifdef GCWZERO
-        conf_toggle(id, _("Cheat mode"),   CONF_CHEAT,
+        conf_toggle(id, _("Unlock all levels"),   CONF_CHEAT,
                     config_get_d(CONFIG_CHEAT), _("On"), 1, _("Off"), 0);
         conf_toggle(id, _("Show FPS"),   CONF_FPS,
                     config_get_d(CONFIG_FPS), _("On"), 1, _("Off"), 0);
