@@ -116,8 +116,20 @@ static int fail_gui(void)
     return id;
 }
 
+#ifdef GCWZERO  // Function defined in main.c, see below:
+extern void reset_stick_vals(void);
+#endif
+
 static int fail_enter(struct state *st, struct state *prev)
 {
+#ifdef GCWZERO
+    //senquack - when entering paused state, reset all stick inputs and send stick centering commands,
+    //      to be extra-kosher and help prevent any possible bugs relating to stuck sticks
+    reset_stick_vals(); //Defined in main.c
+    st_stick(0, 0.0f);
+    st_stick(1, 0.0f);
+#endif //GCWZERO
+
     audio_music_fade_out(2.0f);
     video_clr_grab();
 
