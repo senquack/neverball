@@ -51,6 +51,7 @@ enum
     CONF_CONTROLS = GUI_LAST,
     CONF_CAMERA,
     CONF_VIDEO,
+    CONF_LOAD_DEFAULTS,
     CONF_CHEAT,
     CONF_FPS,
 #else
@@ -115,6 +116,12 @@ static int conf_action(int tok, int val)
         goto_state(&st_camera);
         break;
 
+    case CONF_LOAD_DEFAULTS:
+        goto_state(&st_null);
+        config_init();
+        goto_state(&st_conf);
+        break;
+        
     case CONF_CHEAT:
         goto_state(&st_null);
         config_set_d(CONFIG_CHEAT, val);
@@ -202,6 +209,8 @@ static int conf_gui(void)
 #endif //GCWZERO
 
         gui_space(id);
+
+        conf_state (id, _("Options"), "Reset to Defaults", CONF_LOAD_DEFAULTS);
 
    //senquack - altered for clarification on GCW Zero
 #ifdef GCWZERO
