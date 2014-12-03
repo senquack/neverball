@@ -85,8 +85,12 @@ static int analog_x = 0;
 static int analog_y = 0;
 static int gsensor_x = 0;
 static int gsensor_y = 0;
-static float finesse_scale = 1.0f;
+//static float finesse_scale = 1.0f;
 int finesse_mode = 0;       // Can be set in st_play.c when toggled in-game
+//static int finesse_mode_affects = FINESSE_DPAD | FINESSE_GSENSOR | FINESSE_ANALOG;
+float dpad_scale = 1.0f;
+float gsensor_scale = 1.0f;
+float analog_scale = 1.0f;
 static int analog_enabled = 1;
 static int analog_deadzone = 0;
 static int analog_effective_max = 32767;
@@ -98,11 +102,6 @@ static const int gsensor_max = 26000;	// Just barely under the maximum reading i
                                              //   under normal use (outside of shaking or jerking the unit)
 static int gsensor_effective_max = 26000;
 static int gsensor_nonlinear = 0;
-static int in_actual_game = 0;
-
-// CONFIG_FINESSE_SCALE is a number 0-10, we will convert that to a number between
-//    0-0.725 and add 0.025 to get final scale factor between 0.025 - 0.75
-#define CONV_FINESSE_SCALE_FACTOR (0.025f + ((float)config_get_d(CONFIG_FINESSE_SCALE) * .0725f))
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -287,10 +286,7 @@ static float conv_gsensor_val(int axis, int val)
 
 static void submit_stick_vals()
 {
-    in_actual_game = curr_state() == &st_play_loop;
-
-    if (!in_actual_game) {
-
+    if (curr_state() != &st_play_loop) {
         // If not in the actual game, just update based on DPAD values and return:
         if (up_pressed) {
             st_stick(1, -1.0f);
@@ -311,29 +307,27 @@ static void submit_stick_vals()
         return;
     } else {
         float xval = 0.0f, yval = 0.0f;   // What will ultimately be submitted to st_stick
-        float scale = finesse_mode ? finesse_scale : 1.0f;
 
-        // In the actual game, first handle X-axis:
+        // We're in the actual game, first handle X-axis:
         if (x_pressed) {
             xval = -1.0f;
         } else if (a_pressed) {
             xval = 1.0f;
         } else if (left_pressed) {
-            xval = -scale;
+            xval = -dpad_scale;
         } else if (right_pressed) {
-            xval = scale;
+            xval = dpad_scale;
         } else {
-
             if (analog_enabled) {
                 xval = conv_analog_val(analog_x);
+                xval *= analog_scale;
             }
 
             if (gsensor_enabled && xval == 0.0f) {
                 // No other x-inputs, so go ahead and use gsensor for x-input
                 xval = conv_gsensor_val(0, gsensor_x);
+                xval *= gsensor_scale;
             }
-
-            xval *= scale;
         }
 
         // Then, handle the Y-axis:
@@ -342,21 +336,20 @@ static void submit_stick_vals()
         } else if (b_pressed) {
             yval = 1.0f;
         } else if (up_pressed) {
-            yval = -scale;
+            yval = -dpad_scale;
         } else if (down_pressed) {
-            yval = scale;
+            yval = dpad_scale;
         } else {
-
             if (analog_enabled) {
                 yval = conv_analog_val(analog_y);
+                yval *= analog_scale;
             }
 
             if (gsensor_enabled && yval == 0.0f) {
                 // No other x-inputs, so go ahead and use gsensor for x-input
                 yval = conv_gsensor_val(1, gsensor_y);
+                yval *= gsensor_scale;
             }
-
-            yval *= scale;
         }
 
         st_stick(0, xval);
@@ -366,7 +359,6 @@ static void submit_stick_vals()
 
 void reset_stick_vals(void)
 {
-    in_actual_game = curr_state() == &st_play_loop;
     a_pressed = 0;     
     b_pressed = 0;      
     x_pressed = 0;
@@ -379,8 +371,12 @@ void reset_stick_vals(void)
     analog_y = 0;
     gsensor_x = 0;
     gsensor_y = 0;
-    finesse_scale = CONV_FINESSE_SCALE_FACTOR;
     finesse_mode = config_get_d(CONFIG_FINESSE_MODE_ENABLED);
+    int finesse_mode_affects = config_get_d(CONFIG_FINESSE_MODE_AFFECTS);
+    float finesse_scale = CONV_FINESSE_SCALE_FACTOR;
+    dpad_scale = (finesse_mode && (finesse_mode_affects & FINESSE_DPAD)) ? finesse_scale : 1.0f;
+    gsensor_scale = (finesse_mode && (finesse_mode_affects & FINESSE_GSENSOR)) ? finesse_scale : 1.0f;
+    analog_scale = (finesse_mode && (finesse_mode_affects & FINESSE_ANALOG)) ? finesse_scale : 1.0f;
     analog_enabled = config_get_d(CONFIG_ANALOG_ENABLED);
     analog_deadzone = config_get_d(CONFIG_ANALOG_DEADZONE) * 1000;
     gsensor_enabled = config_get_d(CONFIG_GSENSOR_ENABLED);

@@ -44,6 +44,7 @@ enum
    CONTROLS_ANALOG_DEADZONE,
    CONTROLS_FINESSE_MODE_INDICATOR,
    CONTROLS_FINESSE_SCALE,
+   CONTROLS_FINESSE_MODE_AFFECTS,
 };
 
 static int gsensor_sensitivity_id[11];
@@ -64,6 +65,7 @@ static int controls_action(int tok, int val)
     int gsensor_deadzone = config_get_d(CONFIG_GSENSOR_DEADZONE);
     int analog_deadzone = config_get_d(CONFIG_ANALOG_DEADZONE);
     int finesse_scale = config_get_d(CONFIG_FINESSE_SCALE);
+    int finesse_mode_affects = config_get_d(CONFIG_FINESSE_MODE_AFFECTS);
 
     audio_play(AUD_MENU, 1.0f);
 
@@ -137,6 +139,16 @@ static int controls_action(int tok, int val)
           gui_toggle(finesse_scale_id[finesse_scale]);
           break;
 
+       case CONTROLS_FINESSE_MODE_AFFECTS:
+          goto_state(&st_null);
+          finesse_mode_affects++;
+          if (finesse_mode_affects > FINESSE_MODE_AFFECTS_MAX) {
+             finesse_mode_affects = FINESSE_MODE_AFFECTS_MIN;
+          }
+          config_set_d(CONFIG_FINESSE_MODE_AFFECTS, finesse_mode_affects);
+          goto_state(&st_controls);
+          break;
+
        default:
           break;
     }
@@ -156,6 +168,26 @@ static int controls_gui(void)
             config_get_d(CONFIG_GSENSOR_CENTERY));
 
       conf_header(id, _("Controls"), GUI_BACK);
+
+      char finesse_mode_affects_txt[sizeof ("DPAD, Analog, G-Sensor")];
+      int finesse_mode_affects = config_get_d(CONFIG_FINESSE_MODE_AFFECTS);
+      if (finesse_mode_affects == FINESSE_DPAD) {
+         sprintf(finesse_mode_affects_txt, "DPAD");
+      } else if (finesse_mode_affects == FINESSE_ANALOG) {
+         sprintf(finesse_mode_affects_txt, "Analog");
+      } else if (finesse_mode_affects == FINESSE_GSENSOR) {
+         sprintf(finesse_mode_affects_txt, "G-Sensor");
+      } else if (finesse_mode_affects == (FINESSE_DPAD | FINESSE_ANALOG)) {
+         sprintf(finesse_mode_affects_txt, "DPAD, Analog");
+      } else if (finesse_mode_affects == (FINESSE_DPAD | FINESSE_GSENSOR)) {
+         sprintf(finesse_mode_affects_txt, "DPAD, G-Sensor");
+      } else if (finesse_mode_affects == (FINESSE_ANALOG | FINESSE_GSENSOR)) {
+         sprintf(finesse_mode_affects_txt, "Analog, G-Sensor");
+      } else if (finesse_mode_affects == (FINESSE_ANALOG | FINESSE_GSENSOR | FINESSE_DPAD)) {
+         sprintf(finesse_mode_affects_txt, "DPAD, Analog, G-Sensor");
+      } else {
+         sprintf(finesse_mode_affects_txt, "ERROR");
+      }
 
       int gsensor_sensitivity = config_get_d(CONFIG_GSENSOR_SENSITIVITY);
       int analog_sensitivity = config_get_d(CONFIG_ANALOG_SENSITIVITY);
@@ -184,8 +216,11 @@ static int controls_gui(void)
       conf_toggle(id, _("Analog stick"),   CONTROLS_ANALOG_ENABLED,
             config_get_d(CONFIG_ANALOG_ENABLED), _("On"), 1, _("Off"), 0);
 
+      gui_label(id, _("Warning! Sensitivity left of middle lessens range of motion:"), GUI_SML, 0, 0);
+
       conf_slider(id, _("Analog sensitivity"), CONTROLS_ANALOG_SENSITIVITY, analog_sensitivity,
             analog_sensitivity_id, ARRAYSIZE(analog_sensitivity_id));
+
 
       conf_slider(id, _("Analog deadzone"), CONTROLS_ANALOG_DEADZONE, analog_deadzone,
             analog_deadzone_id, ARRAYSIZE(analog_deadzone_id));
@@ -197,6 +232,8 @@ static int controls_gui(void)
 
       conf_slider(id, _("Finesse speed scale"), CONTROLS_FINESSE_SCALE, finesse_scale,
             finesse_scale_id, ARRAYSIZE(finesse_scale_id));
+
+      jd = conf_state (id, _("Finesse mode affects"), finesse_mode_affects_txt, CONTROLS_FINESSE_MODE_AFFECTS);
 
       gui_layout(id, 0, 0);
    }

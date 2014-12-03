@@ -123,9 +123,15 @@ extern int CONFIG_SCREEN_TILT_ENABLED;
 extern int CONFIG_FINESSE_SCALE;           // percentage 0-100% to scale input values of dpad/analog when in 'finesse mode'
 extern int CONFIG_FINESSE_MODE_ENABLED;
 extern int CONFIG_FINESSE_MODE_INDICATOR;
+extern int CONFIG_FINESSE_MODE_AFFECTS;    // ORed value that defines which input methods finesse-mode affects
 extern int CONFIG_REVERSED_CAMERA_ROTATION;
 extern int CONFIG_ROTATE_ACCEL_NORMAL;             // Acceleration of camera rotation in normal (non-finesse) mode
 extern int CONFIG_ROTATE_ACCEL_FINESSE;            // Acceleration of camera rotation in finesse mode
+
+// CONFIG_FINESSE_SCALE is a number 0-10, we will convert that to a number between
+//    0-0.725 and add 0.025 to get final scale factor between 0.025 - 0.75
+#define CONV_FINESSE_SCALE_FACTOR (0.025f + ((float)config_get_d(CONFIG_FINESSE_SCALE) * .0725f))
+
 #endif //GCWZERO
 
 /* String options. */
@@ -178,8 +184,8 @@ int config_screenshot(void);
 #define KEY_POSE       SDLK_F10
 #define KEY_SCREENSHOT SDLK_F12
 
-//senquack - GCW Zero button defines:
 #ifdef GCWZERO
+//senquack - GCW Zero button defines:
 #define GCWZERO_B       0
 #define GCWZERO_A       1
 #define GCWZERO_Y       2
@@ -188,6 +194,13 @@ int config_screenshot(void);
 #define GCWZERO_START   5
 #define GCWZERO_L       6
 #define GCWZERO_R       7
+
+//senquack - define what control methods finesse mode can affect:
+#define FINESSE_DPAD    (1<<0)
+#define FINESSE_ANALOG  (1<<1)
+#define FINESSE_GSENSOR (1<<2)
+#define FINESSE_MODE_AFFECTS_MAX  7
+#define FINESSE_MODE_AFFECTS_MIN  1
 #endif //GCWZERO
 
 #endif

@@ -45,6 +45,9 @@ int l_pressed = 0;   // Tracks if L-trigger is pressed    (finesse mode hotkey i
 int hotkey_pressed = 0;  // Tracks when hotkey is pressed (for use in camera and finesse combos)
 extern int gsensor_enabled;     // defined in main.c
 extern int finesse_mode;        // defined in main.c
+extern float dpad_scale;
+extern float gsensor_scale;
+extern float analog_scale;
 void reset_stick_vals(void);  // Defined in main.c, this assists with our rather-complicated input scheme
                                 //   allowing A/B/X/Y to override other movement inputs in-game
 #endif //GCWZERO
@@ -469,6 +472,11 @@ static void play_loop_timer(int id, float dt)
             ticks_when_hotkey_pressed = 0;
             finesse_mode = config_get_d(CONFIG_FINESSE_MODE_ENABLED);
             hud_finesse_mode_pulse(finesse_mode);
+            int finesse_mode_affects = config_get_d(CONFIG_FINESSE_MODE_AFFECTS);
+            float finesse_scale = CONV_FINESSE_SCALE_FACTOR;
+            dpad_scale = (finesse_mode && (finesse_mode_affects & FINESSE_DPAD)) ? finesse_scale : 1.0f;
+            gsensor_scale = (finesse_mode && (finesse_mode_affects & FINESSE_GSENSOR)) ? finesse_scale : 1.0f;
+            analog_scale = (finesse_mode && (finesse_mode_affects & FINESSE_ANALOG)) ? finesse_scale : 1.0f;
         } else if (r_pressed) {
             //Hotkey + R-trigger has been pressed, switch to next camera mode
             r_pressed = 0;
