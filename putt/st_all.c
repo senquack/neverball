@@ -1038,14 +1038,16 @@ static int stroke_buttn(int b, int d)
 {
     if (d)
     {
+#ifdef GCWZERO
         //senquack - made it so you can rotate fast using triggers on GCW Zero:
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L1, b)) {
-            stroke_rotate = 24;
+            stroke_rotate = -24;
         }
 
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_R1, b)) {
-            stroke_rotate = -24;
+            stroke_rotate = 24;
         }
+#endif
 
         //senquack - made it so you could press any A/B/X/Y button to shoot:
 #ifdef GCWZERO
