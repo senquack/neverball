@@ -230,10 +230,7 @@ static int loop(void)
 
         case SDL_JOYAXISMOTION:
 #ifdef GCWZERO
-            // Only accept axis motion if the new analog option is enabled and also respect the deadzone setting
-            if (config_get_d(CONFIG_ANALOG_ENABLED) && abs(e.jaxis.value) > config_get_d(CONFIG_ANALOG_DEADZONE)) {
-                st_stick(e.jaxis.axis, JOY_VALUE(e.jaxis.value));
-            }
+            //On GCW Zero, ignore analog stick inputs in neverputt
 #else
             st_stick(e.jaxis.axis, JOY_VALUE(e.jaxis.value));
 #endif //GCWZERO
