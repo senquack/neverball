@@ -238,7 +238,20 @@ static int title_enter(struct state *st, struct state *prev)
 
     if ((id = gui_vstack(0)))
     {
+#ifdef GCWZERO
+        jd = gui_label(id, "Neverputt", GUI_LRG, 0, 0);
+        if (jd) {
+            gui_set_fill(jd);
+            gui_set_rect(jd, GUI_TOP);
+        }
+        int credit_label;
+        if ((credit_label = gui_label(id, "GCW Zero port by Senquack", GUI_SML, gui_wht, gui_wht))) {
+            gui_set_rect(credit_label, GUI_BOT);
+        }
+#else
         gui_label(id, "Neverputt", GUI_LRG, 0, 0);
+#endif //GCWZERO
+
         gui_space(id);
 
         if ((jd = gui_harray(id)))

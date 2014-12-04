@@ -160,8 +160,17 @@ static int title_gui(void)
 
     if ((id = gui_vstack(0)))
     {
+
         if ((jd = gui_label(id, "  Neverball  ", GUI_LRG, 0, 0)))
             gui_set_fill(jd);
+
+#ifdef GCWZERO
+        gui_set_rect(jd, GUI_TOP);
+        int credit_label;
+        if ((credit_label = gui_label(id, "GCW Zero port by Senquack", GUI_SML, gui_wht, gui_wht))) {
+            gui_set_rect(credit_label, GUI_BOT);
+        }
+#endif //GCWZERO
 
         gui_space(id);
 
@@ -190,6 +199,8 @@ static int title_gui(void)
 
             gui_filler(jd);
         }
+
+
         gui_layout(id, 0, 0);
     }
 
