@@ -42,6 +42,10 @@
 const char TITLE[] = "Neverputt " VERSION;
 const char ICON[] = "icon/neverputt.png";
 
+//senquack - new vars defined in putt/st_all.c, we update them here but use them there (assist with fast-aiming)
+#ifdef GCWZERO
+extern int fast_aim, l_pressed, r_pressed;
+#endif //GCWZERO
 
 /*---------------------------------------------------------------------------*/
 
@@ -305,10 +309,28 @@ static int loop(void)
 #endif //GCWZERO
 
         case SDL_JOYBUTTONDOWN:
+            if (config_tst_d(CONFIG_JOYSTICK_BUTTON_X, e.jbutton.button) || 
+                config_tst_d(CONFIG_JOYSTICK_BUTTON_Y, e.jbutton.button)) {
+                fast_aim = 1;
+            } else if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L1, e.jbutton.button)) {
+                l_pressed = 1;
+            } else if (config_tst_d(CONFIG_JOYSTICK_BUTTON_R1, e.jbutton.button)) {
+                r_pressed = 1;
+            }
+
             d = st_buttn(e.jbutton.button, 1);
             break;
 
         case SDL_JOYBUTTONUP:
+            if (config_tst_d(CONFIG_JOYSTICK_BUTTON_X, e.jbutton.button) || 
+                config_tst_d(CONFIG_JOYSTICK_BUTTON_Y, e.jbutton.button)) {
+                fast_aim = 0;
+            } else if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L1, e.jbutton.button)) {
+                l_pressed = 0;
+            } else if (config_tst_d(CONFIG_JOYSTICK_BUTTON_R1, e.jbutton.button)) {
+                r_pressed = 0;
+            }
+
             d = st_buttn(e.jbutton.button, 0);
             break;
         }

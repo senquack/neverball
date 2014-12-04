@@ -30,10 +30,10 @@
 
 /*---------------------------------------------------------------------------*/
 #ifdef GCWZERO
-//senquack - this indicate X/Y buttons (un)pressed (to allow fast aiming)
-static int fast_aim = 0;
-//senquack - these indicate when L/R triggers are (un)pressed (to directly aim fast)
-static int l_pressed = 0, r_pressed = 0;
+//senquack - this indicate X/Y buttons (un)pressed (to allow fast aiming) (updated in main.c)
+int fast_aim = 0;
+//senquack - these indicate when L/R triggers are (un)pressed (to directly aim fast) (updated in main.c)
+int l_pressed = 0, r_pressed = 0;
 #endif //GCWZERO
 
 static SDL_Joystick *joystick = NULL;
@@ -227,11 +227,6 @@ static int title_action(int i)
 
 static int title_enter(struct state *st, struct state *prev)
 {
-    //senquack - always ensure these always get reset:
-#ifdef GCWZERO
-    fast_aim = 0, l_pressed = 0, r_pressed = 0;
-#endif //GCWZERO
-
     int id, jd, kd;
 
     /* Build the title GUI. */
@@ -372,11 +367,6 @@ static int comp_rows(int n)
 
 static int course_enter(struct state *st, struct state *prev)
 {
-    //senquack - always ensure this get reset:
-#ifdef GCWZERO
-    fast_aim = 0, l_pressed = 0, r_pressed = 0;
-#endif //GCWZERO
-
     int w = video.device_w;
     int h = video.device_h;
 
@@ -555,11 +545,6 @@ static int party_action(int i)
 
 static int party_enter(struct state *st, struct state *prev)
 {
-    //senquack - always ensure this get reset:
-#ifdef GCWZERO
-    fast_aim = 0, l_pressed = 0, r_pressed = 0;
-#endif //GCWZERO
-
     int id, jd;
 
     if ((id = gui_vstack(0)))
@@ -673,11 +658,6 @@ static int pause_action(int i)
 
 static int pause_enter(struct state *st, struct state *prev)
 {
-    //senquack - always ensure this get reset:
-#ifdef GCWZERO
-    fast_aim = 0, l_pressed = 0, r_pressed = 0;
-#endif //GCWZERO
-
     int id, jd, td;
 
     audio_music_fade_out(0.2f);
@@ -768,11 +748,6 @@ static int num = 0;
 
 static int next_enter(struct state *st, struct state *prev)
 {
-    //senquack - always ensure this get reset:
-#ifdef GCWZERO
-    fast_aim = 0, l_pressed = 0, r_pressed = 0;
-#endif //GCWZERO
-
     int id, jd;
     char str[MAXSTR];
 
@@ -903,11 +878,6 @@ static int next_buttn(int b, int d)
 
 static int poser_enter(struct state *st, struct state *prev)
 {
-    //senquack - always ensure this get reset:
-#ifdef GCWZERO
-    fast_aim = 0, l_pressed = 0, r_pressed = 0;
-#endif //GCWZERO
-
     game_set_fly(-1.f);
     return 0;
 }
@@ -938,11 +908,6 @@ static int poser_buttn(int b, int d)
 
 static int flyby_enter(struct state *st, struct state *prev)
 {
-    //senquack - always ensure this get reset:
-#ifdef GCWZERO
-    fast_aim = 0, l_pressed = 0, r_pressed = 0;
-#endif //GCWZERO
-
     video_hide_cursor();
 
     if (paused)
@@ -1016,11 +981,6 @@ static int stroke_mag    = 0;
 
 static int stroke_enter(struct state *st, struct state *prev)
 {
-    //senquack - always ensure this get reset:
-#ifdef GCWZERO
-    fast_aim = 0, l_pressed = 0, r_pressed = 0;
-#endif //GCWZERO
-
     hud_init();
     game_clr_mag();
     config_set_d(CONFIG_CAMERA, 2);
@@ -1132,17 +1092,6 @@ static int stroke_buttn(int b, int d)
 {
     if (d)
     {
-#ifdef GCWZERO
-        //senquack - made it so you can rotate fast using triggers on GCW Zero, or by holding X/Y
-        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L1, b)) {
-            l_pressed = 1;
-        } else if (config_tst_d(CONFIG_JOYSTICK_BUTTON_R1, b)) {
-            r_pressed = 1;
-        } else if (config_tst_d(CONFIG_JOYSTICK_BUTTON_X, b) || config_tst_d(CONFIG_JOYSTICK_BUTTON_Y, b)) {
-            fast_aim = 1;
-        }
-#endif
-
         //senquack - made it so you could press A or B button to shoot:
 #ifdef GCWZERO
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_A, b) ||
@@ -1154,20 +1103,7 @@ static int stroke_buttn(int b, int d)
 #endif //GCWZERO
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_START, b))
             return goto_pause(&st_over);
-        //senquack - made it so you can rotate fast using triggers on GCW Zero:
-#ifdef GCWZERO
-    } else {
-        if (config_tst_d(CONFIG_JOYSTICK_BUTTON_L1, b)) {
-            l_pressed = 0;
-        } else if (config_tst_d(CONFIG_JOYSTICK_BUTTON_R1, b)) {
-            r_pressed = 0;
-        } else if (config_tst_d(CONFIG_JOYSTICK_BUTTON_X, b) || config_tst_d(CONFIG_JOYSTICK_BUTTON_Y, b)) {
-            fast_aim = 0;
-        }
     }
-#else
-    }
-#endif //GCWZERO
     return 1;
 }
 
@@ -1175,11 +1111,6 @@ static int stroke_buttn(int b, int d)
 
 static int roll_enter(struct state *st, struct state *prev)
 {
-    //senquack - always ensure this get reset:
-#ifdef GCWZERO
-    fast_aim = l_pressed = r_pressed = 0;
-#endif //GCWZERO
-
     video_hide_cursor();
     hud_init();
 
@@ -1236,11 +1167,6 @@ static int roll_buttn(int b, int d)
 
 static int goal_enter(struct state *st, struct state *prev)
 {
-    //senquack - always ensure this get reset:
-#ifdef GCWZERO
-    fast_aim = l_pressed = r_pressed = 0;
-#endif //GCWZERO
-
     int id;
 
     if ((id = gui_label(0, _("It's In!"), GUI_MED, gui_grn, gui_grn)))
@@ -1321,11 +1247,6 @@ static int goal_buttn(int b, int d)
 
 static int stop_enter(struct state *st, struct state *prev)
 {
-    //senquack - always ensure this get reset:
-#ifdef GCWZERO
-    fast_aim = l_pressed = r_pressed = 0;
-#endif //GCWZERO
-
     if (paused)
         paused = 0;
     else
@@ -1407,11 +1328,6 @@ static int stop_buttn(int b, int d)
 
 static int fall_enter(struct state *st, struct state *prev)
 {
-    //senquack - always ensure this get reset:
-#ifdef GCWZERO
-    fast_aim = l_pressed = r_pressed = 0;
-#endif //GCWZERO
-
     int id;
 
     if ((id = gui_label(0, _("1 Stroke Penalty"), GUI_MED, gui_blk, gui_red)))
@@ -1496,11 +1412,6 @@ static int fall_buttn(int b, int d)
 
 static int score_enter(struct state *st, struct state *prev)
 {
-    //senquack - always ensure this get reset:
-#ifdef GCWZERO
-    fast_aim = l_pressed = r_pressed = 0;
-#endif //GCWZERO
-
     audio_music_fade_out(2.f);
 
     if (paused)
@@ -1565,11 +1476,6 @@ static int score_buttn(int b, int d)
 
 static int over_enter(struct state *st, struct state *prev)
 {
-    //senquack - always ensure this get reset:
-#ifdef GCWZERO
-    fast_aim = l_pressed = r_pressed = 0;
-#endif //GCWZERO
-
     audio_music_fade_out(2.f);
     return score_card(_("Final Scores"), gui_yel, gui_red);
 }
