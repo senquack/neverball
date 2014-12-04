@@ -42,6 +42,7 @@
 const char TITLE[] = "Neverputt " VERSION;
 const char ICON[] = "icon/neverputt.png";
 
+
 /*---------------------------------------------------------------------------*/
 
 static void shot(void)
@@ -228,7 +229,14 @@ static int loop(void)
             break;
 
         case SDL_JOYAXISMOTION:
+#ifdef GCWZERO
+            // Only accept axis motion if the new analog option is enabled and also respect the deadzone setting
+            if (config_get_d(CONFIG_ANALOG_ENABLED) && abs(e.jaxis.value) > config_get_d(CONFIG_ANALOG_DEADZONE)) {
+                st_stick(e.jaxis.axis, JOY_VALUE(e.jaxis.value));
+            }
+#else
             st_stick(e.jaxis.axis, JOY_VALUE(e.jaxis.value));
+#endif //GCWZERO
             break;
 
 //senquack - DPAD on GCWZERO is a HAT so we need to add support for those events:
