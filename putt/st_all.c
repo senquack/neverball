@@ -1462,7 +1462,11 @@ static int score_buttn(int b, int d)
             if (hole_move())
                 goto_state(&st_next);
             else
-                goto_state(&st_score);
+                //senquack - bugfix in original code:
+                //original code had this, I think it is a bug, it should go back to the title like the mouse button does
+                // but instead it 'freezes' on scores screen
+//                goto_state(&st_score);
+                goto_state(&st_title);
         }
 #ifndef GCWZERO
         if (config_tst_d(CONFIG_JOYSTICK_BUTTON_B, b))
