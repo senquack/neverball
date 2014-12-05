@@ -376,19 +376,21 @@ static void game_draw_fore(struct s_rend *rend,
             }
             glEnable(GL_LIGHTING);
 
-            //senquack
-//            /* Draw the entity particles using only the sparkle light. */
-//
-//            glDisable(GL_LIGHT0);
-//            glDisable(GL_LIGHT1);
-//            glEnable (GL_LIGHT2);
-//            {
-//                game_draw_goals(rend, gd, t);
-//                game_draw_jumps(rend, gd, t);
-//            }
-//            glDisable(GL_LIGHT2);
-//            glEnable (GL_LIGHT1);
-//            glEnable (GL_LIGHT0);
+            //senquack - point sprites don't work on GCW Zero 
+#ifndef GCWZERO
+            /* Draw the entity particles using only the sparkle light. */
+
+            glDisable(GL_LIGHT0);
+            glDisable(GL_LIGHT1);
+            glEnable (GL_LIGHT2);
+            {
+                game_draw_goals(rend, gd, t);
+                game_draw_jumps(rend, gd, t);
+            }
+            glDisable(GL_LIGHT2);
+            glEnable (GL_LIGHT1);
+            glEnable (GL_LIGHT0);
+#endif //GCWZERO
         }
         glDepthMask(GL_TRUE);
 
@@ -456,6 +458,7 @@ void game_draw(struct game_draw *gd, int pose, float t)
 
             /* Compute direct and reflected view bases. */
 
+            //senquack - experiment
             v[0] = +view->p[0];
             v[1] = -view->p[1];
             v[2] = +view->p[2];
@@ -475,49 +478,49 @@ void game_draw(struct game_draw *gd, int pose, float t)
 
             /* Draw the background. */
 
-            //senquack  
             game_draw_back(&rend, gd, pose, +1, t);
 
             /* Draw the reflection. */
-            //senquack
-//
-//            if (gd->draw.reflective && config_get_d(CONFIG_REFLECTION))
-//            {
-//                glEnable(GL_STENCIL_TEST);
-//                {
-//                    /* Draw the mirrors only into the stencil buffer. */
-//
-//                    glStencilFunc(GL_ALWAYS, 1, 0xFFFFFFFF);
-//                    glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
-//                    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-//                    glDepthMask(GL_FALSE);
-//
-//                    game_refl_all(&rend, gd);
-//
-//                    glDepthMask(GL_TRUE);
-//                    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-//                    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-//                    glStencilFunc(GL_EQUAL, 1, 0xFFFFFFFF);
-//
-//                    /* Draw the scene reflected into color and depth buffers. */
-//
-//                    glFrontFace(GL_CW);
-//                    glPushMatrix();
-//                    {
-//                        glScalef(+1.0f, -1.0f, +1.0f);
-//
-//                        game_draw_light(gd, -1, t);
-//
-//                        game_draw_back(&rend, gd, pose,    -1, t);
-//                        game_draw_fore(&rend, gd, pose, U, -1, t);
-//                    }
-//                    glPopMatrix();
-//                    glFrontFace(GL_CCW);
-//
-//                    glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFF);
-//                }
-//                glDisable(GL_STENCIL_TEST);
-//            }
+            //senquack - disabled completely on GCW ZERO:
+#ifndef GCWZERO
+            if (gd->draw.reflective && config_get_d(CONFIG_REFLECTION))
+            {
+                glEnable(GL_STENCIL_TEST);
+                {
+                    /* Draw the mirrors only into the stencil buffer. */
+
+                    glStencilFunc(GL_ALWAYS, 1, 0xFFFFFFFF);
+                    glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+                    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+                    glDepthMask(GL_FALSE);
+
+                    game_refl_all(&rend, gd);
+
+                    glDepthMask(GL_TRUE);
+                    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+                    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+                    glStencilFunc(GL_EQUAL, 1, 0xFFFFFFFF);
+
+                    /* Draw the scene reflected into color and depth buffers. */
+
+                    glFrontFace(GL_CW);
+                    glPushMatrix();
+                    {
+                        glScalef(+1.0f, -1.0f, +1.0f);
+
+                        game_draw_light(gd, -1, t);
+
+                        game_draw_back(&rend, gd, pose,    -1, t);
+                        game_draw_fore(&rend, gd, pose, U, -1, t);
+                    }
+                    glPopMatrix();
+                    glFrontFace(GL_CCW);
+
+                    glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFF);
+                }
+                glDisable(GL_STENCIL_TEST);
+            }
+#endif //GCWZERO
 
             /* Ready the lights for foreground rendering. */
 
@@ -598,7 +601,9 @@ void game_lerp_apply(struct game_lerp *gl, struct game_draw *gd)
     /* Particles. */
 
     //senquack - particles don't work on GCW Zero's GLES
-//    part_lerp_apply(a);
+#ifndef GCWZERO
+    part_lerp_apply(a);
+#endif //GCWZERO
 
     /* Tilt. */
 

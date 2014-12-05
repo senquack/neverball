@@ -163,11 +163,16 @@ int video_mode(int f, int w, int h)
     //senquack
 //    SDL_GL_SetAttribute(SDL_GL_STEREO,             stereo);
 
-    //senquack DEBUG
-//    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE,       1);
+    //senquack - disabled drawing shadows and reflections on GCW Zero, don't need a stencil buffer:
+#ifdef GCWZERO
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE,       0);
+#endif
 
+    //senquack - don't need or want these on GCW Zero:
+#ifndef GCWZERO
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, buffers);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, samples);
+#endif
 
     /* Require 16-bit double buffer with 16-bit depth buffer. */
 
@@ -401,12 +406,14 @@ void video_swap(void)
 {
     int dt;
 
-    if (hmd_stat())
-        hmd_swap();
+    //senquack - no need for this on GCW Zero:
+//    if (hmd_stat())
+//        hmd_swap();
 
     /* Take a screenshot of the complete back buffer and swap it. */
 
-    snapshot_take();
+    //senquack - experiment:
+//    snapshot_take();
 
     SDL_GL_SwapWindow(window);
 

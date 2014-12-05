@@ -238,7 +238,7 @@ static int page_controls(int id)
         if ((kd = gui_harray(jd)))
         {
             gui_label(kd, "Toggle G-Sensor On/Off",   GUI_SML, gui_wht, gui_wht);
-            gui_label(kd, "Hold Select for 2 seconds", GUI_SML, gui_yel, gui_yel);
+            gui_label(kd, "Select (hold for 2 seconds)", GUI_SML, gui_yel, gui_yel);
         }
 
         if ((kd = gui_harray(jd)))
@@ -246,6 +246,18 @@ static int page_controls(int id)
             gui_label(kd, "A/B/X/Y",   GUI_SML, gui_wht, gui_wht);
             gui_label(kd, "Tilt (ignoring finesse mode)", GUI_SML, gui_yel, gui_yel);
         }
+
+        gui_set_rect(jd, GUI_ALL);
+
+        gui_label(jd, _("Notes:"), GUI_SML, 0, 0);
+        gui_multi(jd,
+                _("'Finesse Mode' allows finer movement control\\"
+                    "when using the DPAD/Analog/G-Sensor. The A/B/X/Y\\"
+                    "buttons can always be used to move at full-speed.\\"
+                    "You can customize this, along with many other options.\\"
+                    "Use quick presses of the DPAD or nub together with the\\"
+                    "A/B/X/Y buttons to gain more precise control."),
+                GUI_SML, gui_wht, gui_wht);
 
         gui_set_rect(jd, GUI_ALL);
     }

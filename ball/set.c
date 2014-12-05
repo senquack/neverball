@@ -274,6 +274,10 @@ static int set_load(struct set *s, const char *filename)
     if (!fin)
     {
         log_printf("Failure to load set file %s\n", filename);
+
+        //senquack - added error reporting:
+        log_printf(fs_error());
+
         return 0;
     }
 
@@ -401,6 +405,14 @@ int set_init()
         }
         fs_close(fin);
     }
+
+    //senquack - added error reporting after getting random errors opening set files:
+#ifdef GCWZERO
+    else {
+        log_printf("Error opening sets file %s\n", SET_FILE);
+        log_printf(fs_error());
+    }
+#endif //GCWZERO
 
     /*
      * Then, scan for any remaining set description files, and add

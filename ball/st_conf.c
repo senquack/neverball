@@ -210,9 +210,8 @@ static int conf_gui(void)
 
         gui_space(id);
 
-   //senquack - altered for clarification on GCW Zero, added reset-to-defaults
+   //senquack - altered for clarification on GCW Zero
 #ifdef GCWZERO
-        conf_state (id, _("Options"), "Reset to Defaults", CONF_LOAD_DEFAULTS);
         conf_slider(id, _("USB Mouse Sensitivity"), CONF_MOUSE_SENSE, mouse,
                     mouse_id, ARRAYSIZE(mouse_id));
 #else
@@ -243,6 +242,10 @@ static int conf_gui(void)
         //senquack - locales are not supported on GCW Zero's firmware:
 #ifndef GCWZERO
         lang_id = conf_state(id, _("Language"), " ", CONF_LANGUAGE);
+#endif //GCWZERO
+
+#ifdef GCWZERO
+        conf_state (id, _("Options"), "Reset to Defaults", CONF_LOAD_DEFAULTS);
 #endif //GCWZERO
 
         gui_layout(id, 0, 0);

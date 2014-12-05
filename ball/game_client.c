@@ -96,12 +96,15 @@ static void game_run_cmd(const union cmd *cmd)
                 break;
             }
 
+            //senquack - particle effects disabled on gcw zero:
+#ifndef GCWZERO
             /* Compute gravity for particle effects. */
 
             if (status == GAME_GOAL)
                 game_tilt_grav(v, GRAVITY_UP, tilt);
             else
                 game_tilt_grav(v, GRAVITY_DN, tilt);
+#endif //GCWZERO
 
             /* Step particle, goal and jump effects. */
 
@@ -121,7 +124,9 @@ static void game_run_cmd(const union cmd *cmd)
                 }
 
                 //senquack - particles don't work on GCW Zero's GLES
-//                part_step(v, dt);
+#ifndef GCWZERO
+                part_step(v, dt);
+#endif //GCWZERO
             }
 
             break;
@@ -157,8 +162,11 @@ static void game_run_cmd(const union cmd *cmd)
                 hp = &vary->hv[idx];
 
                 item_color(hp, v);
+
                 //senquack - particles don't work on GCW Zero's GLES
-//                part_burst(hp->p, v);
+#ifndef GCWZERO
+                part_burst(hp->p, v);
+#endif
 
                 hp->t = ITEM_NONE;
             }

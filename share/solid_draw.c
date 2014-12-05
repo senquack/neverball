@@ -417,6 +417,7 @@ void sol_draw_mesh(const struct d_mesh *mp, struct s_rend *rend, int p)
         glVertexPointer  (3, T, s, (GLvoid *) offsetof (struct d_vert, p));
         glNormalPointer  (   T, s, (GLvoid *) offsetof (struct d_vert, n));
 
+        //senquack TODO DEBUG: comment this out maybe:
         if (tex_env_stage(TEX_STAGE_SHADOW))
         {
             glTexCoordPointer(3, T, s, (GLvoid *) offsetof (struct d_vert, p));
